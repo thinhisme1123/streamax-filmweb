@@ -3,6 +3,7 @@ import { MainLayout } from './layouts/MainLayout';
 import { Home } from './pages/Home';
 import { MovieDetails } from './pages/MovieDetails';
 import { Search } from './pages/Search';
+import { CategoryPage } from './pages/CategoryPage';
 import { Auth } from './pages/Auth';
 import { MyList } from './pages/MyList';
 import { Watch } from './pages/Watch';
@@ -19,6 +20,8 @@ function App() {
           <Route path="/movie/:id" element={<MovieDetails />} />
           <Route path="/phim/:id" element={<MovieDetails />} />
           <Route path="/search" element={<Search />} />
+          <Route path="/category/:slug" element={<CategoryPage />} />
+          <Route path="/country/:slug" element={<CategoryPage />} />
           <Route path="/mylist" element={<MyList />} />
         </Route>
       </Routes>

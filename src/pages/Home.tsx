@@ -3,6 +3,9 @@ import { HeroBanner } from '../components/HeroBanner';
 import { MovieCarousel } from '../components/MovieCarousel';
 import { useMovies } from '../hooks/useMovies';
 import { HeroBannerSkeleton } from '../components/Skeletons';
+import { ContinueWatchingCarousel } from '../components/ContinueWatchingCarousel';
+import { useUserStore } from '../store/userStore';
+import { useAuthStore } from '../store/authStore';
 
 export const Home = () => {
   // Ensure we start at the top when navigating
@@ -11,6 +14,8 @@ export const Home = () => {
   }, []);
 
   const { heroMovies, newMovies, tvSeries, animations, loading, error } = useMovies();
+  const { history } = useUserStore();
+  const { isAuthenticated } = useAuthStore();
 
   // Find a hero movie with a poster if possible, otherwise use the first one
   const featuredMovie = heroMovies.find(m => m.posterUrl) || heroMovies[0];
@@ -31,6 +36,9 @@ export const Home = () => {
       {loading ? <HeroBannerSkeleton /> : featuredMovie && <HeroBanner movie={featuredMovie} />}
       
       <div className="-mt-24 md:-mt-32 relative z-20 space-y-8">
+        {isAuthenticated && history.length > 0 && (
+           <ContinueWatchingCarousel history={history} />
+        )}
         <MovieCarousel title="Phim Mới Cập Nhật" movies={newMovies} isLoading={loading} />
         <MovieCarousel title="Phim Bộ Mới" movies={tvSeries} isLoading={loading} />
         <MovieCarousel title="Hoạt Hình" movies={animations} isLoading={loading} />

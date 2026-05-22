@@ -17,8 +17,8 @@ export const MyList = () => {
         {bookmarks.length > 0 ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-y-12 gap-x-4">
             {bookmarks.map(movie => (
-              <div key={movie.id} className="w-full aspect-video">
-                <MovieCard movie={movie} />
+              <div key={movie.slug} className="w-full aspect-video">
+                <MovieCard movie={{ slug: movie.slug, title: movie.title, name: movie.title, posterUrl: movie.poster_url } as any} />
               </div>
             ))}
           </div>

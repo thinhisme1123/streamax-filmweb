@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Play, Plus, Check, ArrowLeft, Star, Clock, Globe, Film, Users, Clapperboard, MonitorPlay, ChevronDown, ChevronUp } from 'lucide-react';
 import { useMovieDetail } from '../hooks/useMovieDetail';
@@ -48,10 +48,31 @@ export const MovieDetails = () => {
   const [selectedEpisode, setSelectedEpisode] = useState<AppEpisode | null>(null);
   const [activeServer, setActiveServer] = useState(0);
   const [showAllCast, setShowAllCast] = useState(false);
+  const location = useLocation();
 
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [slug]);
+
+  // Auto-play episode if passed from Continue Watching
+  useEffect(() => {
+    if (movie && location.state?.autoPlayEpisode) {
+      for (const server of movie.episodes) {
+        const episode = server.episodes.find(ep => ep.name === location.state.autoPlayEpisode);
+        if (episode) {
+          setActiveServer(movie.episodes.indexOf(server));
+          setSelectedEpisode(episode);
+          // Clean up state so a refresh doesn't trigger it again
+          window.history.replaceState({}, document.title);
+          
+          setTimeout(() => {
+            document.getElementById('video-player-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }, 500);
+          break;
+        }
+      }
+    }
+  }, [movie, location.state]);
 
   if (loading) return <DetailSkeleton />;
 
@@ -329,6 +350,8 @@ export const MovieDetails = () => {
               linkEmbed={selectedEpisode.linkEmbed}
               linkM3u8={selectedEpisode.linkM3u8}
               title={`${movie.title} - ${selectedEpisode.name}`}
+              movie={movie}
+              episodeName={selectedEpisode.name}
               onClose={() => setSelectedEpisode(null)}
             />
           </div>

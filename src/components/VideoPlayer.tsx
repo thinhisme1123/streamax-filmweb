@@ -1,14 +1,42 @@
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { X } from 'lucide-react';
+import { useUserStore } from '../store/userStore';
 
 interface VideoPlayerProps {
   linkEmbed: string;
   linkM3u8: string;
   title: string;
+  movie: any;
+  episodeName: string;
   onClose: () => void;
 }
 
-export const VideoPlayer = ({ linkEmbed, title, onClose }: VideoPlayerProps) => {
+export const VideoPlayer = ({ linkEmbed, title, movie, episodeName, onClose }: VideoPlayerProps) => {
+  const { addToHistory } = useUserStore();
+  const [, setSecondsWatched] = useState(0);
+
+  useEffect(() => {
+    // We can't access iframe native video.currentTime due to cross-origin restrictions.
+    // Instead, we track how many seconds the user has this player open.
+    // We ping the backend every 10 seconds.
+    const interval = setInterval(() => {
+      setSecondsWatched((prev) => {
+        const newTime = prev + 10;
+        
+        // Assuming a standard episode is 45 mins (2700 seconds). 
+        // We'll calculate a fake progress percentage. Cap it at 100%.
+        const assumedTotalLength = 2700;
+        const progressPercentage = Math.min(Math.round((newTime / assumedTotalLength) * 100), 100);
+        
+        addToHistory(movie, episodeName, progressPercentage);
+        return newTime;
+      });
+    }, 10000); // every 10 seconds
+
+    return () => clearInterval(interval);
+  }, [movie, episodeName, addToHistory]);
+
   return (
     <motion.div
       initial={{ opacity: 0, y: -20 }}

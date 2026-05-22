@@ -6,6 +6,13 @@ export interface ApiMovieItem {
   thumb_url: string;
   poster_url: string;
   year?: number;
+  category?: { id: string; name: string; slug: string }[];
+  country?: { id: string; name: string; slug: string }[];
+  episode_current?: string;
+  quality?: string;
+  lang?: string;
+  time?: string;
+  type?: string;
 }
 
 export interface ApiResponse {
@@ -18,7 +25,63 @@ export interface ApiResponse {
   };
 }
 
+// === Paginated list/search API response ===
+export interface ApiPagination {
+  totalItems: number;
+  totalItemsPerPage: number;
+  currentPage: number;
+  totalPages: number;
+}
+
+export interface ApiListData {
+  items: ApiMovieItem[];
+  params: {
+    pagination: ApiPagination;
+  };
+  APP_DOMAIN_CDN_IMAGE: string;
+  titlePage?: string;
+}
+
+export interface ApiListResponse {
+  status: boolean;
+  msg: string;
+  data: ApiListData;
+}
+
+// === Taxonomy types ===
+export interface AppCategory {
+  _id: string;
+  name: string;
+  slug: string;
+}
+
+export interface PaginationInfo {
+  currentPage: number;
+  totalPages: number;
+  totalItems: number;
+  hasMore: boolean;
+}
+
+export interface MovieListResult {
+  movies: AppMovie[];
+  pagination: PaginationInfo;
+}
+
+export interface SearchParams {
+  keyword: string;
+  page?: number;
+  sort_field?: string;
+  sort_type?: string;
+  sort_lang?: string;
+  category?: string;
+  country?: string;
+  year?: string;
+  limit?: number;
+}
+
+
 // === Detail API Types ===
+
 
 export interface ApiEpisode {
   name: string;
@@ -78,6 +141,10 @@ export interface AppMovie {
   year: number;
   matchScore: number;
   maturityRating: string;
+  // Optional enriched fields from list APIs
+  quality?: string;
+  episodeCurrent?: string;
+  language?: string;
 }
 
 export interface AppMovieDetail {
@@ -132,11 +199,14 @@ export const normalizeApiMovie = (item: ApiMovieItem, imageDomain: string = ''):
     thumbnailUrl: getFullUrl(item.thumb_url),
     posterUrl: getFullUrl(item.poster_url),
     videoUrl: "",
-    genre: "N/A",
-    duration: "N/A",
+    genre: item.category?.[0]?.name || "N/A",
+    duration: item.time || "N/A",
     year: item.year || new Date().getFullYear(),
     matchScore: Math.floor(Math.random() * (99 - 85) + 85),
     maturityRating: "13+",
+    quality: item.quality,
+    episodeCurrent: item.episode_current,
+    language: item.lang,
   };
 };
 
