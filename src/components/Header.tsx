@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Search, Bell, User, LogOut, X, Film } from 'lucide-react';
+import { Search, Bell, User, LogOut, X, Film, ChevronDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../hooks/useAuth';
 import { searchMovies } from '../services/api';
@@ -108,11 +108,30 @@ export const Header = () => {
     handleSearchClose();
   };
 
-  const navLinks = [
-    { to: '/', label: 'Trang Chủ' },
-    { to: '/category/hanh-dong', label: 'Thể Loại' },
-    { to: '/search', label: 'Phim Lẻ' },
+  const CATEGORIES = [
+    { name: 'Hành Động', slug: 'hanh-dong' },
+    { name: 'Tình Cảm', slug: 'tinh-cam' },
+    { name: 'Hài Hước', slug: 'hai-huoc' },
+    { name: 'Cổ Trang', slug: 'co-trang' },
+    { name: 'Tâm Lý', slug: 'tam-ly-tinh-cam' },
+    { name: 'Hình Sự', slug: 'hinh-su' },
+    { name: 'Chiến Tranh', slug: 'chien-tranh' },
+    { name: 'Thể Thao', slug: 'the-thao' },
+    { name: 'Khoa Học', slug: 'khoa-hoc' },
+    { name: 'Viễn Tưởng', slug: 'vien-tuong' },
   ];
+
+  const COUNTRIES = [
+    { name: 'Hàn Quốc', slug: 'han-quoc' },
+    { name: 'Trung Quốc', slug: 'trung-quoc' },
+    { name: 'Âu Mỹ', slug: 'au-my' },
+    { name: 'Việt Nam', slug: 'viet-nam' },
+    { name: 'Nhật Bản', slug: 'nhat-ban' },
+    { name: 'Thái Lan', slug: 'thai-lan' },
+    { name: 'Ấn Độ', slug: 'an-do' },
+  ];
+
+  const YEARS = Array.from({ length: 15 }, (_, i) => 2024 - i);
 
   return (
     <header className={`fixed top-0 w-full z-50 transition-all duration-500 ${
@@ -124,18 +143,64 @@ export const Header = () => {
           <Link to="/" className="text-primary text-2xl md:text-3xl font-black uppercase tracking-widest hover:text-primary-hover transition">
             StreaMax
           </Link>
-          <nav className="hidden md:flex gap-6 text-sm font-medium">
-            {navLinks.map(link => (
-              <Link
-                key={link.to}
-                to={link.to}
-                className={`hover:text-white transition ${
-                  location.pathname === link.to ? 'text-white' : 'text-gray-300'
-                }`}
-              >
-                {link.label}
-              </Link>
-            ))}
+          <nav className="hidden lg:flex items-center gap-6 text-sm font-medium">
+            <Link to="/" className={`hover:text-white transition ${location.pathname === '/' ? 'text-white' : 'text-gray-300'}`}>
+              Trang Chủ
+            </Link>
+            <Link to="/danh-sach/phim-le" className={`hover:text-white transition ${location.pathname.includes('/phim-le') ? 'text-white' : 'text-gray-300'}`}>
+              Phim Lẻ
+            </Link>
+            <Link to="/danh-sach/phim-bo" className={`hover:text-white transition ${location.pathname.includes('/phim-bo') ? 'text-white' : 'text-gray-300'}`}>
+              Phim Bộ
+            </Link>
+
+            {/* Thể Loại Dropdown */}
+            <div className="relative group py-2">
+              <button className={`flex items-center gap-1 hover:text-white transition ${location.pathname.includes('/the-loai') ? 'text-white' : 'text-gray-300'}`}>
+                Thể Loại <ChevronDown className="w-4 h-4 group-hover:rotate-180 transition-transform duration-300" />
+              </button>
+              <div className="absolute top-full left-0 w-[400px] pt-4 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300">
+                <div className="bg-dark-light/95 backdrop-blur-xl border border-white/10 rounded-xl p-4 shadow-2xl grid grid-cols-2 gap-2">
+                  {CATEGORIES.map(cat => (
+                    <Link key={cat.slug} to={`/the-loai/${cat.slug}`} className="px-3 py-2 text-gray-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors">
+                      {cat.name}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Quốc Gia Dropdown */}
+            <div className="relative group py-2">
+              <button className={`flex items-center gap-1 hover:text-white transition ${location.pathname.includes('/quoc-gia') ? 'text-white' : 'text-gray-300'}`}>
+                Quốc Gia <ChevronDown className="w-4 h-4 group-hover:rotate-180 transition-transform duration-300" />
+              </button>
+              <div className="absolute top-full left-0 w-64 pt-4 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300">
+                <div className="bg-dark-light/95 backdrop-blur-xl border border-white/10 rounded-xl p-4 shadow-2xl grid grid-cols-2 gap-2">
+                  {COUNTRIES.map(country => (
+                    <Link key={country.slug} to={`/quoc-gia/${country.slug}`} className="px-3 py-2 text-gray-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors">
+                      {country.name}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Năm Dropdown */}
+            <div className="relative group py-2">
+              <button className={`flex items-center gap-1 hover:text-white transition ${location.pathname.includes('/nam') ? 'text-white' : 'text-gray-300'}`}>
+                Năm <ChevronDown className="w-4 h-4 group-hover:rotate-180 transition-transform duration-300" />
+              </button>
+              <div className="absolute top-full left-0 w-72 pt-4 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300">
+                <div className="bg-dark-light/95 backdrop-blur-xl border border-white/10 rounded-xl p-4 shadow-2xl grid grid-cols-3 gap-2">
+                  {YEARS.map(year => (
+                    <Link key={year} to={`/nam/${year}`} className="px-3 py-2 text-center text-gray-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors text-sm">
+                      {year}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            </div>
           </nav>
         </div>
 

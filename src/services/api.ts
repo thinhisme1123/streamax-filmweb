@@ -89,3 +89,16 @@ export const getCountryMovies = async (slug: string, page = 1): Promise<MovieLis
   return normalizePaginatedResponse(response);
 };
 
+export const getListMoviesPaginated = async (type: string, page = 1): Promise<MovieListResult> => {
+  const response = await api.get<ApiListResponse>(`/v1/api/danh-sach/${type}`, { params: { page } });
+  if (!response.data.status) throw new Error(`Failed to fetch list: ${type}`);
+  return normalizePaginatedResponse(response);
+};
+
+export const getYearMovies = async (year: string, page = 1): Promise<MovieListResult> => {
+  // Try checking if this API actually works, usually it returns the same format
+  const response = await api.get<ApiListResponse>(`/v1/api/nam/${year}`, { params: { page } });
+  if (!response.data.status) throw new Error(`Failed to fetch movies for year: ${year}`);
+  return normalizePaginatedResponse(response);
+};
+

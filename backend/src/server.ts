@@ -4,6 +4,9 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import authRoutes from './routes/auth';
 import userRoutes from './routes/user';
+import { createServer } from 'http';
+import { Server } from 'socket.io';
+import { setupSocket } from './socket';
 
 dotenv.config();
 
@@ -33,8 +36,20 @@ const connectDB = async () => {
   }
 };
 
+// Create HTTP Server and attach Socket.IO
+const server = createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: 'http://localhost:5173', // Explicitly allow frontend URL
+    methods: ['GET', 'POST']
+  }
+});
+
+// Initialize real-time socket events
+setupSocket(io);
+
 connectDB().then(() => {
-  app.listen(PORT, () => {
+  server.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
   });
 });

@@ -4,10 +4,11 @@ import { MainLayout } from './layouts/MainLayout';
 import { Home } from './pages/Home';
 import { MovieDetails } from './pages/MovieDetails';
 import { Search } from './pages/Search';
-import { CategoryPage } from './pages/CategoryPage';
+import { MovieListPage } from './pages/MovieListPage';
 import { Auth } from './pages/Auth';
 import { MyList } from './pages/MyList';
 import { Watch } from './pages/Watch';
+import { WatchRoom } from './pages/WatchRoom';
 import { ProtectedRoute } from './components/ProtectedRoute';
 
 function App() {
@@ -25,14 +26,19 @@ function App() {
       <Routes>
         <Route path="/auth" element={<Auth />} />
         <Route path="/watch/:id" element={<Watch />} />
+        <Route path="/watch-party/:roomId" element={<WatchRoom />} />
         
         <Route element={<MainLayout />}>
           <Route path="/" element={<Home />} />
           <Route path="/movie/:id" element={<MovieDetails />} />
           <Route path="/phim/:id" element={<MovieDetails />} />
           <Route path="/search" element={<Search />} />
-          <Route path="/category/:slug" element={<CategoryPage />} />
-          <Route path="/country/:slug" element={<CategoryPage />} />
+          <Route path="/danh-sach/:type" element={<MovieListPage />} />
+          <Route path="/category/:slug" element={<MovieListPage />} />
+          <Route path="/the-loai/:slug" element={<MovieListPage />} />
+          <Route path="/country/:slug" element={<MovieListPage />} />
+          <Route path="/quoc-gia/:slug" element={<MovieListPage />} />
+          <Route path="/nam/:year" element={<MovieListPage />} />
           
           <Route element={<ProtectedRoute />}>
             <Route path="/mylist" element={<MyList />} />

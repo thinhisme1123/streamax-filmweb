@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Play, Plus, Check, ArrowLeft, Star, Clock, Globe, Film, Users, Clapperboard, MonitorPlay, ChevronDown, ChevronUp } from 'lucide-react';
+import { Play, ArrowLeft, Star, Clock, Globe, Film, Users, Clapperboard, MonitorPlay, ChevronDown, ChevronUp } from 'lucide-react';
+import { v4 as uuidv4 } from 'uuid';
 import { useMovieDetail } from '../hooks/useMovieDetail';
 import { useBookmarks } from '../hooks/useBookmarks';
 import { VideoPlayer } from '../components/VideoPlayer';
@@ -44,7 +45,7 @@ export const MovieDetails = () => {
   const { id: slug } = useParams();
   const navigate = useNavigate();
   const { movie, loading, error } = useMovieDetail(slug);
-  const { isBookmarked, toggleBookmark } = useBookmarks();
+  const { isBookmarked } = useBookmarks();
 
   const [selectedEpisode, setSelectedEpisode] = useState<AppEpisode | null>(null);
   const [activeServer, setActiveServer] = useState(0);
@@ -110,6 +111,16 @@ export const MovieDetails = () => {
     if (movie.episodes.length > 0 && movie.episodes[0].episodes.length > 0) {
       handlePlayEpisode(movie.episodes[0].episodes[0]);
     }
+  };
+
+  const handleCreateWatchParty = () => {
+    if (!movie) return;
+    const roomId = uuidv4();
+    let firstEpisodeSlug = '';
+    if (movie.episodes.length > 0 && movie.episodes[0].episodes.length > 0) {
+      firstEpisodeSlug = movie.episodes[0].episodes[0].slug;
+    }
+    navigate(`/watch-party/${roomId}?movieSlug=${movie.slug}&episodeSlug=${firstEpisodeSlug}`);
   };
 
   return (
@@ -240,6 +251,12 @@ export const MovieDetails = () => {
                 className="flex items-center gap-2.5 bg-primary hover:bg-primary-hover px-7 py-3.5 rounded-lg font-bold text-white transition-all hover:shadow-lg hover:shadow-primary/30 hover:scale-[1.02] active:scale-[0.98]"
               >
                 <Play className="w-5 h-5 fill-white" /> Xem Phim
+              </button>
+              <button
+                onClick={handleCreateWatchParty}
+                className="flex items-center gap-2.5 bg-purple-600 hover:bg-purple-700 px-7 py-3.5 rounded-lg font-bold text-white transition-all hover:shadow-lg hover:shadow-purple-600/30 hover:scale-[1.02] active:scale-[0.98]"
+              >
+                <Users className="w-5 h-5" /> Tạo phòng xem chung
               </button>
               <FavoriteButton
                 movie={{
