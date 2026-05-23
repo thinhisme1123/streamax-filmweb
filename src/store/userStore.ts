@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { backendApi } from '../services/backendApi';
 import { AppMovie } from '../types/movie';
 import { useAuthStore } from './authStore';
+import toast from 'react-hot-toast';
 
 export interface FavoriteMovie {
   slug: string;
@@ -54,7 +55,7 @@ export const useUserStore = create<UserState>((set, get) => ({
   toggleBookmark: async (movie) => {
     const { isAuthenticated } = useAuthStore.getState();
     if (!isAuthenticated) {
-      alert('Vui lòng đăng nhập để sử dụng tính năng này');
+      toast.error('Vui lòng đăng nhập để thêm vào danh sách yêu thích');
       return;
     }
 
@@ -74,8 +75,10 @@ export const useUserStore = create<UserState>((set, get) => ({
 
     try {
       await backendApi.post('/user/favorites', { slug, title, poster_url });
+      toast.success(isBookmarked ? 'Đã xoá khỏi Danh sách của tôi' : 'Đã thêm vào Danh sách của tôi');
     } catch (error) {
       console.error('Failed to toggle bookmark:', error);
+      toast.error('Có lỗi xảy ra. Vui lòng thử lại.');
       // Revert on failure
       get().fetchUserData();
     }

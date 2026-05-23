@@ -6,6 +6,7 @@ import { useMovieDetail } from '../hooks/useMovieDetail';
 import { useBookmarks } from '../hooks/useBookmarks';
 import { VideoPlayer } from '../components/VideoPlayer';
 import { AppEpisode } from '../types/movie';
+import { FavoriteButton } from '../components/FavoriteButton';
 
 // Detail page skeleton
 const DetailSkeleton = () => (
@@ -240,8 +241,8 @@ export const MovieDetails = () => {
               >
                 <Play className="w-5 h-5 fill-white" /> Xem Phim
               </button>
-              <button
-                onClick={() => toggleBookmark({
+              <FavoriteButton
+                movie={{
                   id: movie.id,
                   title: movie.title,
                   slug: movie.slug,
@@ -254,12 +255,12 @@ export const MovieDetails = () => {
                   year: movie.year,
                   matchScore: 95,
                   maturityRating: '13+',
-                })}
-                className="flex items-center gap-2.5 bg-white/10 hover:bg-white/15 border border-white/10 px-7 py-3.5 rounded-lg font-bold text-white transition-all hover:scale-[1.02] active:scale-[0.98]"
+                }}
+                className="flex items-center gap-2.5 bg-white/10 hover:bg-white/15 border border-white/10 px-7 py-3.5 rounded-lg font-bold text-white transition-all hover:scale-[1.02] active:scale-[0.98] group"
+                iconClassName="w-5 h-5"
               >
-                {bookmarked ? <Check className="w-5 h-5" /> : <Plus className="w-5 h-5" />}
                 {bookmarked ? 'Đã Lưu' : 'Lưu Phim'}
-              </button>
+              </FavoriteButton>
             </motion.div>
 
             {/* Synopsis */}

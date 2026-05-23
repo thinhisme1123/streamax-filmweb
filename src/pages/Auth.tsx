@@ -1,27 +1,71 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import { useAuthStore } from '../store/authStore';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import toast from 'react-hot-toast';
+import { Loader2 } from 'lucide-react';
+import { clsx } from 'clsx';
+import { twMerge } from 'tailwind-merge';
+
+const baseSchema = z.object({
+  email: z.string().min(1, 'Email là bắt buộc').email('Địa chỉ email không hợp lệ'),
+  password: z.string().min(6, 'Mật khẩu phải có ít nhất 6 ký tự'),
+  confirmPassword: z.string().optional(),
+});
 
 export const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const { login, register, isLoading, error } = useAuth();
+  const { login, register: apiRegister, isLoading } = useAuth();
   const navigate = useNavigate();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (email && password) {
-      let success = false;
-      if (isLogin) {
-        success = await login(email, password);
-      } else {
-        success = await register(email, password);
-      }
-      
-      if (success) {
-        navigate('/');
-      }
+  const authSchema = baseSchema.superRefine((data, ctx) => {
+    if (!isLogin && data.password !== data.confirmPassword) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Mật khẩu không khớp',
+        path: ['confirmPassword'],
+      });
+    }
+  });
+
+  type AuthFormData = z.infer<typeof authSchema>;
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    reset,
+    clearErrors,
+  } = useForm<AuthFormData>({
+    resolver: zodResolver(authSchema),
+    defaultValues: { email: '', password: '', confirmPassword: '' },
+    mode: 'onSubmit',
+  });
+
+  const handleToggleMode = () => {
+    setIsLogin(!isLogin);
+    reset();
+    clearErrors();
+  };
+
+  const onSubmit = async (data: AuthFormData) => {
+    let success = false;
+    
+    if (isLogin) {
+      success = await login(data.email, data.password);
+    } else {
+      success = await apiRegister(data.email, data.password);
+    }
+    
+    if (success) {
+      toast.success(isLogin ? 'Đăng nhập thành công!' : 'Đăng ký thành công!');
+      navigate('/');
+    } else {
+      const errorMessage = useAuthStore.getState().error;
+      toast.error(errorMessage || (isLogin ? 'Đăng nhập thất bại' : 'Đăng ký thất bại'));
     }
   };
 
@@ -41,39 +85,73 @@ export const Auth = () => {
           {isLogin ? 'Đăng nhập' : 'Đăng ký'}
         </h2>
 
-        {error && (
-          <div className="bg-red-500/20 border border-red-500 text-red-100 p-3 rounded mb-4 text-sm">
-            {error}
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           <div>
             <input
               type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              {...register('email')}
               placeholder="Email"
-              className="w-full bg-dark-light/70 text-white rounded px-4 py-3 outline-none focus:ring-2 focus:ring-primary focus:bg-dark-light transition"
-              required
+              className={twMerge(
+                "w-full bg-dark-light/70 text-white rounded px-4 py-3 outline-none focus:ring-2 focus:bg-dark-light transition border",
+                errors.email 
+                  ? "border-red-500 focus:border-red-500 focus:ring-red-500" 
+                  : "border-transparent focus:ring-primary"
+              )}
             />
+            {errors.email && (
+              <p className="text-red-500 text-sm mt-1.5">{errors.email.message}</p>
+            )}
           </div>
+
           <div>
             <input
               type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              {...register('password')}
               placeholder="Mật khẩu"
-              className="w-full bg-dark-light/70 text-white rounded px-4 py-3 outline-none focus:ring-2 focus:ring-primary focus:bg-dark-light transition"
-              required
+              className={twMerge(
+                "w-full bg-dark-light/70 text-white rounded px-4 py-3 outline-none focus:ring-2 focus:bg-dark-light transition border",
+                errors.password 
+                  ? "border-red-500 focus:border-red-500 focus:ring-red-500" 
+                  : "border-transparent focus:ring-primary"
+              )}
             />
+            {errors.password && (
+              <p className="text-red-500 text-sm mt-1.5">{errors.password.message}</p>
+            )}
           </div>
+
+          {!isLogin && (
+            <div>
+              <input
+                type="password"
+                {...register('confirmPassword')}
+                placeholder="Xác nhận mật khẩu"
+                className={twMerge(
+                  "w-full bg-dark-light/70 text-white rounded px-4 py-3 outline-none focus:ring-2 focus:bg-dark-light transition border",
+                  errors.confirmPassword 
+                    ? "border-red-500 focus:border-red-500 focus:ring-red-500" 
+                    : "border-transparent focus:ring-primary"
+                )}
+              />
+              {errors.confirmPassword && (
+                <p className="text-red-500 text-sm mt-1.5">{errors.confirmPassword.message}</p>
+              )}
+            </div>
+          )}
+
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full bg-primary text-white font-bold rounded py-3 hover:bg-primary-hover transition mt-6 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full flex items-center justify-center bg-primary text-white font-bold rounded py-3 hover:bg-primary-hover transition mt-6 disabled:opacity-70 disabled:cursor-not-allowed"
           >
-            {isLoading ? 'Đang xử lý...' : (isLogin ? 'Đăng nhập' : 'Đăng ký')}
+            {isLoading ? (
+              <>
+                <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                Đang xử lý...
+              </>
+            ) : (
+              isLogin ? 'Đăng nhập' : 'Đăng ký'
+            )}
           </button>
 
           <div className="flex items-center justify-between text-sm text-gray-400 mt-4">
@@ -89,14 +167,22 @@ export const Auth = () => {
           {isLogin ? (
             <p>
               Bạn mới biết đến StreaMax?{' '}
-              <button onClick={() => { setIsLogin(false); setEmail(''); setPassword(''); }} className="text-white hover:underline font-medium">
+              <button 
+                type="button" 
+                onClick={handleToggleMode} 
+                className="text-white hover:underline font-medium"
+              >
                 Đăng ký ngay
               </button>.
             </p>
           ) : (
             <p>
               Đã có tài khoản?{' '}
-              <button onClick={() => { setIsLogin(true); setEmail(''); setPassword(''); }} className="text-white hover:underline font-medium">
+              <button 
+                type="button" 
+                onClick={handleToggleMode} 
+                className="text-white hover:underline font-medium"
+              >
                 Đăng nhập ngay
               </button>.
             </p>
