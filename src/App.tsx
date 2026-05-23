@@ -9,6 +9,7 @@ import { Auth } from './pages/Auth';
 import { MyList } from './pages/MyList';
 import { Watch } from './pages/Watch';
 import { WatchRoom } from './pages/WatchRoom';
+import { WatchMovie } from './pages/WatchMovie';
 import { ProtectedRoute } from './components/ProtectedRoute';
 
 function App() {
@@ -31,7 +32,8 @@ function App() {
         <Route element={<MainLayout />}>
           <Route path="/" element={<Home />} />
           <Route path="/movie/:id" element={<MovieDetails />} />
-          <Route path="/phim/:id" element={<MovieDetails />} />
+          <Route path="/phim/:movieSlug" element={<MovieDetails />} />
+          <Route path="/xem-phim/:movieSlug/:episodeSlug" element={<WatchMovie />} />
           <Route path="/search" element={<Search />} />
           <Route path="/danh-sach/:type" element={<MovieListPage />} />
           <Route path="/category/:slug" element={<MovieListPage />} />

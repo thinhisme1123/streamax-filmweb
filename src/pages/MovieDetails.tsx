@@ -1,11 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { Play, ArrowLeft, Star, Clock, Globe, Film, Users, Clapperboard, MonitorPlay, ChevronDown, ChevronUp } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
 import { useMovieDetail } from '../hooks/useMovieDetail';
 import { useBookmarks } from '../hooks/useBookmarks';
-import { VideoPlayer } from '../components/VideoPlayer';
 import { AppEpisode } from '../types/movie';
 import { FavoriteButton } from '../components/FavoriteButton';
 
@@ -42,19 +41,18 @@ const fadeIn = {
 };
 
 export const MovieDetails = () => {
-  const { id: slug } = useParams();
+  const { movieSlug } = useParams<{ movieSlug: string }>();
   const navigate = useNavigate();
-  const { movie, loading, error } = useMovieDetail(slug);
+  const { movie, loading, error } = useMovieDetail(movieSlug || '');
   const { isBookmarked } = useBookmarks();
 
-  const [selectedEpisode, setSelectedEpisode] = useState<AppEpisode | null>(null);
   const [activeServer, setActiveServer] = useState(0);
   const [showAllCast, setShowAllCast] = useState(false);
   const location = useLocation();
 
   useEffect(() => {
     window.scrollTo(0, 0);
-  }, [slug]);
+  }, [movieSlug]);
 
   // Auto-play episode if passed from Continue Watching
   useEffect(() => {
@@ -62,14 +60,10 @@ export const MovieDetails = () => {
       for (const server of movie.episodes) {
         const episode = server.episodes.find(ep => ep.name === location.state.autoPlayEpisode);
         if (episode) {
-          setActiveServer(movie.episodes.indexOf(server));
-          setSelectedEpisode(episode);
+          navigate(`/xem-phim/${movie.slug}/${episode.slug}`);
           // Clean up state so a refresh doesn't trigger it again
           window.history.replaceState({}, document.title);
           
-          setTimeout(() => {
-            document.getElementById('video-player-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-          }, 500);
           break;
         }
       }
@@ -100,11 +94,7 @@ export const MovieDetails = () => {
   const currentServer = movie.episodes[activeServer];
 
   const handlePlayEpisode = (episode: AppEpisode) => {
-    setSelectedEpisode(episode);
-    // Scroll to player smoothly
-    setTimeout(() => {
-      document.getElementById('video-player-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, 100);
+    navigate(`/xem-phim/${movie.slug}/${episode.slug}`);
   };
 
   const handlePlayFirst = () => {
@@ -360,22 +350,6 @@ export const MovieDetails = () => {
         </div>
       </div>
 
-      {/* ===== VIDEO PLAYER ===== */}
-      <AnimatePresence>
-        {selectedEpisode && (
-          <div id="video-player-section" className="max-w-7xl mx-auto px-4 md:px-12 mt-12">
-            <VideoPlayer
-              linkEmbed={selectedEpisode.linkEmbed}
-              linkM3u8={selectedEpisode.linkM3u8}
-              title={`${movie.title} - ${selectedEpisode.name}`}
-              movie={movie}
-              episodeName={selectedEpisode.name}
-              onClose={() => setSelectedEpisode(null)}
-            />
-          </div>
-        )}
-      </AnimatePresence>
-
       {/* ===== EPISODES ===== */}
       {movie.episodes.length > 0 && (
         <motion.div
@@ -416,22 +390,16 @@ export const MovieDetails = () => {
           {currentServer && (
             <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10 gap-2.5">
               {currentServer.episodes.map((ep) => {
-                const isActive = selectedEpisode?.slug === ep.slug;
                 return (
                   <button
                     key={ep.slug}
                     onClick={() => handlePlayEpisode(ep)}
-                    className={`relative px-3 py-3 rounded-lg text-sm font-medium transition-all duration-200 group overflow-hidden ${
-                      isActive
-                        ? 'bg-primary text-white shadow-lg shadow-primary/40 scale-[1.02]'
-                        : 'bg-white/5 text-gray-300 border border-white/10 hover:bg-primary/20 hover:border-primary/50 hover:text-white'
-                    }`}
+                    className={`relative px-3 py-3 rounded-lg text-sm font-medium transition-all duration-200 group overflow-hidden bg-white/5 text-gray-300 border border-white/10 hover:bg-primary/20 hover:border-primary/50 hover:text-white`}
                   >
                     {/* Shine effect on hover */}
                     <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
                     
                     <div className="relative flex items-center justify-center gap-1.5">
-                      {isActive && <Play className="w-3 h-3 fill-white" />}
                       <span className="truncate">{ep.name}</span>
                     </div>
                   </button>
