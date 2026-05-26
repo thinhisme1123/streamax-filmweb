@@ -1,12 +1,29 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
+<<<<<<< HEAD
 import { motion } from 'framer-motion';
 import { Play, ArrowLeft, Star, Clock, Globe, Film, Users, Clapperboard, MonitorPlay, ChevronDown, ChevronUp } from 'lucide-react';
+=======
+import { motion, AnimatePresence } from 'framer-motion';
+import { Play, ArrowLeft, Star, Clock, Globe, Film, Users, Clapperboard, MonitorPlay, ChevronDown, ChevronUp, MessageSquare, Send, UserCircle } from 'lucide-react';
+>>>>>>> 85ccd1d (feat: implement user profile management with watch history and password security features)
 import { v4 as uuidv4 } from 'uuid';
 import { useMovieDetail } from '../hooks/useMovieDetail';
 import { useBookmarks } from '../hooks/useBookmarks';
 import { AppEpisode } from '../types/movie';
 import { FavoriteButton } from '../components/FavoriteButton';
+import { useAuthStore } from '../store/authStore';
+import { backendApi } from '../services/backendApi';
+import toast from 'react-hot-toast';
+
+interface AppComment {
+  _id: string;
+  user: { email: string };
+  movieSlug: string;
+  rating: number;
+  text: string;
+  createdAt: string;
+}
 
 // Detail page skeleton
 const DetailSkeleton = () => (
@@ -49,6 +66,32 @@ export const MovieDetails = () => {
   const [activeServer, setActiveServer] = useState(0);
   const [showAllCast, setShowAllCast] = useState(false);
   const location = useLocation();
+  const { user } = useAuthStore();
+
+  const [activeChunkIndex, setActiveChunkIndex] = useState(0);
+  const CHUNK_SIZE = 100;
+
+  // Comments state
+  const [comments, setComments] = useState<AppComment[]>([]);
+  const [commentText, setCommentText] = useState('');
+  const [rating, setRating] = useState(10);
+  const [hoverRating, setHoverRating] = useState(0);
+
+  const currentServer = movie?.episodes ? movie.episodes[activeServer] : null;
+
+  const episodeChunks = useMemo(() => {
+    if (!currentServer || !currentServer.episodes) return [];
+    const chunks = [];
+    const allEpisodes = currentServer.episodes;
+    for (let i = 0; i < allEpisodes.length; i += CHUNK_SIZE) {
+      chunks.push(allEpisodes.slice(i, i + CHUNK_SIZE));
+    }
+    return chunks;
+  }, [currentServer]);
+
+  useEffect(() => {
+    setActiveChunkIndex(0);
+  }, [activeServer]);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -56,19 +99,39 @@ export const MovieDetails = () => {
 
   // Auto-play episode if passed from Continue Watching
   useEffect(() => {
-    if (movie && location.state?.autoPlayEpisode) {
+    if (movie && movie.episodes && location.state?.autoPlayEpisode) {
       for (const server of movie.episodes) {
+        if (!server.episodes) continue;
         const episode = server.episodes.find(ep => ep.name === location.state.autoPlayEpisode);
         if (episode) {
+<<<<<<< HEAD
           navigate(`/xem-phim/${movie.slug}/${episode.slug}`);
           // Clean up state so a refresh doesn't trigger it again
           window.history.replaceState({}, document.title);
           
+=======
+          // Clean up state so a refresh doesn't trigger it again
+          window.history.replaceState({}, document.title);
+          
+          const serverIndex = movie.episodes.indexOf(server);
+          navigate(`/xem-phim/${movie.slug}/${episode.slug}?server=${serverIndex}`);
+>>>>>>> 85ccd1d (feat: implement user profile management with watch history and password security features)
           break;
         }
       }
     }
-  }, [movie, location.state]);
+  }, [movie, location.state, navigate]);
+
+  useEffect(() => {
+    if (movie) {
+      backendApi.get(`/comments/${movie.slug}`)
+        .then(res => setComments(res.data || []))
+        .catch(err => {
+          console.error('Failed to fetch comments', err);
+          setComments([]);
+        });
+    }
+  }, [movie]);
 
   if (loading) return <DetailSkeleton />;
 
@@ -90,16 +153,21 @@ export const MovieDetails = () => {
   }
 
   const bookmarked = isBookmarked(movie.id);
-  const displayCast = showAllCast ? movie.cast : movie.cast.slice(0, 6);
-  const currentServer = movie.episodes[activeServer];
+  const displayCast = showAllCast ? (movie.cast || []) : (movie.cast || []).slice(0, 6);
 
   const handlePlayEpisode = (episode: AppEpisode) => {
+<<<<<<< HEAD
     navigate(`/xem-phim/${movie.slug}/${episode.slug}`);
+=======
+    if (movie) {
+      navigate(`/xem-phim/${movie.slug}/${episode.slug}?server=${activeServer}`);
+    }
+>>>>>>> 85ccd1d (feat: implement user profile management with watch history and password security features)
   };
 
   const handlePlayFirst = () => {
-    if (movie.episodes.length > 0 && movie.episodes[0].episodes.length > 0) {
-      handlePlayEpisode(movie.episodes[0].episodes[0]);
+    if (movie?.episodes?.length > 0 && movie.episodes[0].episodes?.length > 0) {
+      navigate(`/xem-phim/${movie.slug}/${movie.episodes[0].episodes[0].slug}?server=0`);
     }
   };
 
@@ -107,10 +175,33 @@ export const MovieDetails = () => {
     if (!movie) return;
     const roomId = uuidv4();
     let firstEpisodeSlug = '';
-    if (movie.episodes.length > 0 && movie.episodes[0].episodes.length > 0) {
+    if (movie?.episodes?.length > 0 && movie.episodes[0].episodes?.length > 0) {
       firstEpisodeSlug = movie.episodes[0].episodes[0].slug;
     }
     navigate(`/watch-party/${roomId}?movieSlug=${movie.slug}&episodeSlug=${firstEpisodeSlug}`);
+  };
+
+  const handleSubmitComment = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user) {
+      toast.error('Vui lòng đăng nhập để bình luận');
+      return;
+    }
+    if (!commentText.trim() || !movie) return;
+
+    try {
+      const res = await backendApi.post('/comments', {
+        movieSlug: movie.slug,
+        rating,
+        text: commentText
+      });
+      setComments([res.data, ...comments]);
+      setCommentText('');
+      setRating(10);
+      toast.success('Bình luận thành công');
+    } catch (error) {
+      toast.error('Lỗi khi đăng bình luận');
+    }
   };
 
   return (
@@ -295,7 +386,7 @@ export const MovieDetails = () => {
               className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8"
             >
               {/* Director */}
-              {movie.director.length > 0 && (
+              {movie?.director?.length > 0 && (
                 <div>
                   <h4 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-2 flex items-center gap-2">
                     <Clapperboard className="w-3.5 h-3.5" /> Đạo diễn
@@ -305,7 +396,7 @@ export const MovieDetails = () => {
               )}
 
               {/* Country */}
-              {movie.countries.length > 0 && (
+              {movie?.countries?.length > 0 && (
                 <div>
                   <h4 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-2 flex items-center gap-2">
                     <Globe className="w-3.5 h-3.5" /> Quốc gia
@@ -316,7 +407,7 @@ export const MovieDetails = () => {
             </motion.div>
 
             {/* Cast */}
-            {movie.cast.length > 0 && (
+            {movie?.cast?.length > 0 && (
               <motion.div
                 custom={7}
                 variants={fadeIn}
@@ -327,13 +418,14 @@ export const MovieDetails = () => {
                   <Users className="w-3.5 h-3.5" /> Diễn viên
                 </h4>
                 <div className="flex flex-wrap gap-2 mb-2">
-                  {displayCast.map((actor, idx) => (
-                    <span
+                  {(displayCast || []).map((actor, idx) => (
+                    <button
                       key={idx}
-                      className="bg-white/5 border border-white/10 px-3 py-1.5 rounded-full text-sm text-gray-300"
+                      onClick={() => navigate(`/dien-vien/${encodeURIComponent(actor)}`)}
+                      className="bg-white/5 hover:bg-primary/20 border border-white/10 hover:border-primary/40 px-3 py-1.5 rounded-full text-sm text-gray-300 hover:text-white transition-all duration-200 cursor-pointer"
                     >
                       {actor}
-                    </span>
+                    </button>
                   ))}
                 </div>
                 {movie.cast.length > 6 && (
@@ -351,7 +443,7 @@ export const MovieDetails = () => {
       </div>
 
       {/* ===== EPISODES ===== */}
-      {movie.episodes.length > 0 && (
+      {movie?.episodes?.length > 0 && (
         <motion.div
           custom={8}
           variants={fadeIn}
@@ -369,8 +461,8 @@ export const MovieDetails = () => {
 
           {/* Server tabs */}
           {movie.episodes.length > 1 && (
-            <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
-              {movie.episodes.map((server, idx) => (
+            <div className="flex flex-nowrap overflow-x-auto whitespace-nowrap gap-2 mb-6 pb-2 scrollbar-hide">
+              {(movie.episodes || []).map((server, idx) => (
                 <button
                   key={idx}
                   onClick={() => setActiveServer(idx)}
@@ -386,15 +478,46 @@ export const MovieDetails = () => {
             </div>
           )}
 
+          {/* Chunk tabs */}
+          {episodeChunks.length > 1 && (
+            <div className="flex flex-nowrap overflow-x-auto whitespace-nowrap gap-2 mb-6 pb-2 scrollbar-hide">
+              {episodeChunks.map((chunk, index) => {
+                const start = index * CHUNK_SIZE + 1;
+                const end = start + chunk.length - 1;
+                return (
+                  <button
+                    key={index}
+                    onClick={() => setActiveChunkIndex(index)}
+                    className={`whitespace-nowrap px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                      activeChunkIndex === index
+                        ? 'bg-primary text-white shadow-lg shadow-primary/30'
+                        : 'bg-white/5 text-gray-300 border border-white/10 hover:bg-white/10'
+                    }`}
+                  >
+                    {start}-{end}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
           {/* Episode grid */}
-          {currentServer && (
+          {currentServer && episodeChunks[activeChunkIndex] && (
             <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10 gap-2.5">
+<<<<<<< HEAD
               {currentServer.episodes.map((ep) => {
+=======
+              {(episodeChunks[activeChunkIndex] || []).map((ep) => {
+>>>>>>> 85ccd1d (feat: implement user profile management with watch history and password security features)
                 return (
                   <button
                     key={ep.slug}
                     onClick={() => handlePlayEpisode(ep)}
+<<<<<<< HEAD
                     className={`relative px-3 py-3 rounded-lg text-sm font-medium transition-all duration-200 group overflow-hidden bg-white/5 text-gray-300 border border-white/10 hover:bg-primary/20 hover:border-primary/50 hover:text-white`}
+=======
+                    className="relative px-3 py-3 rounded-lg text-sm font-medium transition-all duration-200 group overflow-hidden bg-white/5 text-gray-300 border border-white/10 hover:bg-primary/20 hover:border-primary/50 hover:text-white"
+>>>>>>> 85ccd1d (feat: implement user profile management with watch history and password security features)
                   >
                     {/* Shine effect on hover */}
                     <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
@@ -407,6 +530,111 @@ export const MovieDetails = () => {
               })}
             </div>
           )}
+        </motion.div>
+      )}
+
+      {/* ===== COMMENTS & RATING ===== */}
+      {movie && (
+        <motion.div
+          custom={9}
+          variants={fadeIn}
+          initial="hidden"
+          animate="visible"
+          className="max-w-7xl mx-auto px-4 md:px-12 mt-16"
+        >
+          <div className="bg-dark-light rounded-2xl p-6 md:p-8 border border-white/5">
+            <h3 className="text-xl md:text-2xl font-bold text-white mb-8 flex items-center gap-3">
+              <MessageSquare className="w-6 h-6 text-primary" />
+              Đánh giá & Bình luận
+              <span className="text-sm font-normal text-gray-400">({comments.length})</span>
+            </h3>
+
+            {/* Comment Form */}
+            {user ? (
+              <form onSubmit={handleSubmitComment} className="mb-10 bg-black/20 p-5 rounded-xl border border-white/5">
+                <div className="flex items-center gap-2 mb-4">
+                  <span className="text-gray-300 text-sm font-medium mr-2">Đánh giá:</span>
+                  {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((star) => (
+                    <button
+                      key={star}
+                      type="button"
+                      onClick={() => setRating(star)}
+                      onMouseEnter={() => setHoverRating(star)}
+                      onMouseLeave={() => setHoverRating(0)}
+                      className="focus:outline-none transition-transform hover:scale-110"
+                    >
+                      <Star
+                        className={`w-6 h-6 ${(hoverRating || rating) >= star ? 'text-yellow-500 fill-yellow-500' : 'text-gray-600'}`}
+                      />
+                    </button>
+                  ))}
+                </div>
+                <div className="relative">
+                  <textarea
+                    value={commentText}
+                    onChange={(e) => setCommentText(e.target.value)}
+                    placeholder="Chia sẻ cảm nghĩ của bạn về bộ phim này..."
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary min-h-[100px] resize-none"
+                  />
+                  <button
+                    type="submit"
+                    disabled={!commentText.trim()}
+                    className="absolute bottom-3 right-3 bg-primary hover:bg-primary-hover disabled:opacity-50 disabled:hover:bg-primary text-white p-2.5 rounded-lg transition-colors flex items-center justify-center"
+                  >
+                    <Send className="w-4 h-4" />
+                  </button>
+                </div>
+              </form>
+            ) : (
+              <div className="mb-10 text-center bg-black/20 p-8 rounded-xl border border-white/5">
+                <MessageSquare className="w-12 h-12 text-gray-600 mx-auto mb-3" />
+                <p className="text-gray-400 mb-4">Bạn cần đăng nhập để tham gia bình luận và đánh giá phim</p>
+                <button
+                  onClick={() => navigate('/login')}
+                  className="bg-primary hover:bg-primary-hover text-white px-6 py-2.5 rounded-lg font-medium transition-colors"
+                >
+                  Đăng nhập để bình luận
+                </button>
+              </div>
+            )}
+
+            {/* Comment List */}
+            <div className="space-y-4">
+              {(comments || []).length > 0 ? (
+                (comments || []).map((comment) => (
+                  <div key={comment._id} className="bg-black/20 p-5 rounded-xl border border-white/5 flex gap-4">
+                    <UserCircle className="w-10 h-10 text-gray-400 shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between mb-1">
+                        <h4 className="text-white font-medium truncate pr-4">
+                          {comment.user.email.split('@')[0]}
+                        </h4>
+                        <span className="text-xs text-gray-500 shrink-0">
+                          {new Date(comment.createdAt).toLocaleDateString('vi-VN')}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1 mb-2">
+                        {[...Array(10)].map((_, i) => (
+                          <Star
+                            key={i}
+                            className={`w-3.5 h-3.5 ${i < comment.rating ? 'text-yellow-500 fill-yellow-500' : 'text-gray-700'}`}
+                          />
+                        ))}
+                        <span className="text-yellow-500 text-xs font-bold ml-1">{comment.rating}/10</span>
+                      </div>
+                      <p className="text-gray-300 text-sm whitespace-pre-wrap leading-relaxed">
+                        {comment.text}
+                      </p>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="text-center text-gray-500 py-8">
+                  Chưa có bình luận nào. Hãy là người đầu tiên đánh giá phim này!
+                </div>
+              )}
+            </div>
+          </div>
         </motion.div>
       )}
     </div>

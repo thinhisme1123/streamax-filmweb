@@ -9,10 +9,11 @@ interface VideoPlayerProps {
   title: string;
   movie: any;
   episodeName: string;
+  episodeSlug: string;
   onClose: () => void;
 }
 
-export const VideoPlayer = ({ linkEmbed, title, movie, episodeName, onClose }: VideoPlayerProps) => {
+export const VideoPlayer = ({ linkEmbed, title, movie, episodeName, episodeSlug, onClose }: VideoPlayerProps) => {
   const { addToHistory } = useUserStore();
   const [, setSecondsWatched] = useState(0);
 
@@ -24,18 +25,16 @@ export const VideoPlayer = ({ linkEmbed, title, movie, episodeName, onClose }: V
       setSecondsWatched((prev) => {
         const newTime = prev + 10;
         
-        // Assuming a standard episode is 45 mins (2700 seconds). 
-        // We'll calculate a fake progress percentage. Cap it at 100%.
+        // Assuming a standard episode is 45 mins (2700 seconds).
         const assumedTotalLength = 2700;
-        const progressPercentage = Math.min(Math.round((newTime / assumedTotalLength) * 100), 100);
         
-        addToHistory(movie, episodeName, progressPercentage);
+        addToHistory(movie, episodeName, episodeSlug, newTime, assumedTotalLength);
         return newTime;
       });
     }, 10000); // every 10 seconds
 
     return () => clearInterval(interval);
-  }, [movie, episodeName, addToHistory]);
+  }, [movie, episodeName, episodeSlug, addToHistory]);
 
   return (
     <motion.div

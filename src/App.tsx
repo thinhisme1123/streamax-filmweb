@@ -11,6 +11,8 @@ import { Watch } from './pages/Watch';
 import { WatchRoom } from './pages/WatchRoom';
 import { WatchMovie } from './pages/WatchMovie';
 import { ProtectedRoute } from './components/ProtectedRoute';
+import { Profile } from './pages/Profile';
+import { ActorPage } from './pages/ActorPage';
 
 function App() {
   return (
@@ -27,6 +29,7 @@ function App() {
       <Routes>
         <Route path="/auth" element={<Auth />} />
         <Route path="/watch/:id" element={<Watch />} />
+        <Route path="/xem-phim/:movieSlug/:episodeSlug" element={<WatchMovie />} />
         <Route path="/watch-party/:roomId" element={<WatchRoom />} />
         
         <Route element={<MainLayout />}>
@@ -41,9 +44,11 @@ function App() {
           <Route path="/country/:slug" element={<MovieListPage />} />
           <Route path="/quoc-gia/:slug" element={<MovieListPage />} />
           <Route path="/nam/:year" element={<MovieListPage />} />
+          <Route path="/dien-vien/:actorName" element={<ActorPage />} />
           
           <Route element={<ProtectedRoute />}>
             <Route path="/mylist" element={<MyList />} />
+            <Route path="/profile" element={<Profile />} />
           </Route>
         </Route>
       </Routes>

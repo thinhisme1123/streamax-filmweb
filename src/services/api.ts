@@ -32,10 +32,19 @@ export const getMovieDetail = async (slug: string): Promise<AppMovieDetail> => {
 
 // Helper: normalize paginated list responses
 const normalizePaginatedResponse = (response: { data: ApiListResponse }): MovieListResult => {
-  const d = response.data.data;
-  const imageDomain = d.APP_DOMAIN_CDN_IMAGE || 'https://phimimg.com';
-  const movies = (d.items || []).map(item => normalizeApiMovie(item, imageDomain));
-  const p = d.params.pagination;
+  const d = response.data?.data;
+  const imageDomain = d?.APP_DOMAIN_CDN_IMAGE || 'https://phimimg.com';
+  
+  const rawItems = d?.items || [];
+  const movies = rawItems.map(item => normalizeApiMovie(item, imageDomain));
+  
+  const p = d?.params?.pagination || {
+    totalItems: 0,
+    totalItemsPerPage: 24,
+    currentPage: 1,
+    totalPages: 1
+  };
+
   return {
     movies,
     pagination: {
@@ -56,9 +65,22 @@ export const searchMovies = async (params: SearchParams): Promise<MovieListResul
     }
   }
 
-  const response = await api.get<ApiListResponse>(`/v1/api/tim-kiem`, {
+  const response = await api.get<any>(`/v1/api/tim-kiem`, {
     params: cleanParams,
   });
+  
+  // If search returns error or null data, return empty result gracefully
+  if (response.data.status === 'error' || !response.data.data) {
+    return {
+      movies: [],
+      pagination: {
+        currentPage: 1,
+        totalPages: 1,
+        totalItems: 0,
+        hasMore: false,
+      }
+    };
+  }
   
   if (!response.data.status) {
     throw new Error('Search failed: ' + (response.data.msg || 'Unknown error'));
@@ -77,27 +99,27 @@ export const getCountries = async (): Promise<AppCategory[]> => {
   return response.data;
 };
 
-export const getCategoryMovies = async (slug: string, page = 1): Promise<MovieListResult> => {
-  const response = await api.get<ApiListResponse>(`/v1/api/the-loai/${slug}`, { params: { page } });
+export const getCategoryMovies = async (slug: string, page = 1, extraParams: Record<string, string> = {}): Promise<MovieListResult> => {
+  const response = await api.get<ApiListResponse>(`/v1/api/the-loai/${slug}`, { params: { page, ...extraParams } });
   if (!response.data.status) throw new Error(`Failed to fetch category: ${slug}`);
   return normalizePaginatedResponse(response);
 };
 
-export const getCountryMovies = async (slug: string, page = 1): Promise<MovieListResult> => {
-  const response = await api.get<ApiListResponse>(`/v1/api/quoc-gia/${slug}`, { params: { page } });
+export const getCountryMovies = async (slug: string, page = 1, extraParams: Record<string, string> = {}): Promise<MovieListResult> => {
+  const response = await api.get<ApiListResponse>(`/v1/api/quoc-gia/${slug}`, { params: { page, ...extraParams } });
   if (!response.data.status) throw new Error(`Failed to fetch country: ${slug}`);
   return normalizePaginatedResponse(response);
 };
 
-export const getListMoviesPaginated = async (type: string, page = 1): Promise<MovieListResult> => {
-  const response = await api.get<ApiListResponse>(`/v1/api/danh-sach/${type}`, { params: { page } });
+export const getListMoviesPaginated = async (type: string, page = 1, extraParams: Record<string, string> = {}): Promise<MovieListResult> => {
+  const response = await api.get<ApiListResponse>(`/v1/api/danh-sach/${type}`, { params: { page, ...extraParams } });
   if (!response.data.status) throw new Error(`Failed to fetch list: ${type}`);
   return normalizePaginatedResponse(response);
 };
 
-export const getYearMovies = async (year: string, page = 1): Promise<MovieListResult> => {
+export const getYearMovies = async (year: string, page = 1, extraParams: Record<string, string> = {}): Promise<MovieListResult> => {
   // Try checking if this API actually works, usually it returns the same format
-  const response = await api.get<ApiListResponse>(`/v1/api/nam/${year}`, { params: { page } });
+  const response = await api.get<ApiListResponse>(`/v1/api/nam/${year}`, { params: { page, ...extraParams } });
   if (!response.data.status) throw new Error(`Failed to fetch movies for year: ${year}`);
   return normalizePaginatedResponse(response);
 };

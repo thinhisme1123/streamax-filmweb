@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
-import { useParams, useLocation, useNavigate } from 'react-router-dom';
+import { useParams, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ChevronLeft, ChevronRight, Tag, Globe, Calendar, ListVideo } from 'lucide-react';
+import { FilterBar } from '../components/FilterBar';
 import { MovieGrid, MovieGridSkeleton } from '../components/MovieGrid';
-import { getCategoryMovies, getCountryMovies, getListMoviesPaginated, getYearMovies } from '../services/api';
+import { getCategoryMovies, getCountryMovies, getListMoviesPaginated, getYearMovies, searchMovies } from '../services/api';
 import { AppMovie, PaginationInfo } from '../types/movie';
 
 const DEFAULT_PAGINATION: PaginationInfo = {
@@ -18,8 +19,7 @@ export const MovieListPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // Parse page from query string (e.g. ?page=2)
-  const searchParams = new URLSearchParams(location.search);
+  const [searchParams, setSearchParams] = useSearchParams();
   const pageParam = parseInt(searchParams.get('page') || '1', 10);
 
   const [movies, setMovies] = useState<AppMovie[]>([]);
@@ -65,10 +65,19 @@ export const MovieListPage = () => {
       setError(null);
       let result;
 
-      if (isList) result = await getListMoviesPaginated(param, page);
-      else if (isCountry) result = await getCountryMovies(param, page);
-      else if (isCategory) result = await getCategoryMovies(param, page);
-      else if (isYear) result = await getYearMovies(param, page);
+      const categoryParam = searchParams.get('category');
+      const countryParam = searchParams.get('country');
+      const yearFilterParam = searchParams.get('year');
+
+      const extraParams: Record<string, string> = {};
+      if (categoryParam) extraParams.category = categoryParam;
+      if (countryParam) extraParams.country = countryParam;
+      if (yearFilterParam) extraParams.year = yearFilterParam;
+
+      if (isList) result = await getListMoviesPaginated(param, page, extraParams);
+      else if (isCountry) result = await getCountryMovies(param, page, extraParams);
+      else if (isCategory) result = await getCategoryMovies(param, page, extraParams);
+      else if (isYear) result = await getYearMovies(param, page, extraParams);
 
       if (result) {
         setMovies(result.movies);
@@ -85,11 +94,14 @@ export const MovieListPage = () => {
   useEffect(() => {
     fetchMovies(currentParam, pageParam);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentParam, pageParam, location.pathname]);
+  }, [currentParam, pageParam, location.pathname, searchParams.get('category'), searchParams.get('country'), searchParams.get('year')]);
 
   const handlePageChange = (newPage: number) => {
     if (newPage >= 1 && newPage <= pagination.totalPages) {
-      navigate(`${location.pathname}?page=${newPage}`);
+      // Rule 2: Preserve searchParams in Pagination
+      const newSearchParams = new URLSearchParams(searchParams);
+      newSearchParams.set('page', newPage.toString());
+      setSearchParams(newSearchParams);
     }
   };
 
@@ -199,10 +211,14 @@ export const MovieListPage = () => {
             </button>
           </div>
         ) : isLoading ? (
-          <MovieGridSkeleton count={20} />
+          <>
+            <FilterBar />
+            <MovieGridSkeleton count={20} />
+          </>
         ) : (
           <>
-            <MovieGrid movies={movies} emptyMessage="Không có phim nào trong danh mục này." />
+            <FilterBar />
+            <MovieGrid movies={movies} emptyMessage="Không có phim nào phù hợp với bộ lọc." />
             {renderPagination()}
           </>
         )}

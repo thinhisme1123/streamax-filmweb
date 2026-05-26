@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { backendApi } from '../services/backendApi';
-import { AppMovie } from '../types/movie';
+import { AppMovie, AppMovieDetail } from '../types/movie';
 import { useAuthStore } from './authStore';
 import toast from 'react-hot-toast';
 
@@ -15,7 +15,10 @@ export interface WatchHistoryItem {
   movieTitle: string;
   poster_url: string;
   currentEpisode: string;
+  episodeSlug: string;
   progressPercentage: number;
+  currentTime: number;
+  totalDuration: number;
   lastWatchedAt: string;
 }
 
@@ -25,7 +28,8 @@ interface UserState {
   isLoading: boolean;
   fetchUserData: () => Promise<void>;
   toggleBookmark: (movie: AppMovie | FavoriteMovie) => Promise<void>;
-  addToHistory: (movie: AppMovie, episodeName: string, progress?: number) => Promise<void>;
+  addToHistory: (movie: AppMovie | AppMovieDetail, episodeName: string, episodeSlug: string, currentTime: number, totalDuration: number) => Promise<void>;
+  removeFromHistory: (movieSlug: string) => Promise<void>;
   clearUserData: () => void;
 }
 
@@ -84,7 +88,7 @@ export const useUserStore = create<UserState>((set, get) => ({
     }
   },
 
-  addToHistory: async (movie, episodeName, progress = 0) => {
+  addToHistory: async (movie, episodeName, episodeSlug, currentTime, totalDuration) => {
     const { isAuthenticated } = useAuthStore.getState();
     if (!isAuthenticated) return;
 
@@ -95,13 +99,18 @@ export const useUserStore = create<UserState>((set, get) => ({
     // Optimistic update
     const currentHistory = get().history;
     const filtered = currentHistory.filter(m => m.movieSlug !== movieSlug);
+    const progressPercentage = Math.min(Math.round((currentTime / (totalDuration || 1)) * 100), 100);
+
     set({
       history: [{
         movieSlug,
         movieTitle,
         poster_url,
         currentEpisode: episodeName,
-        progressPercentage: progress,
+        episodeSlug,
+        progressPercentage,
+        currentTime,
+        totalDuration,
         lastWatchedAt: new Date().toISOString()
       }, ...filtered].slice(0, 50)
     });
@@ -112,11 +121,33 @@ export const useUserStore = create<UserState>((set, get) => ({
         movieTitle,
         poster_url,
         currentEpisode: episodeName,
-        progressPercentage: progress
+        episodeSlug,
+        progressPercentage,
+        currentTime,
+        totalDuration
       });
     } catch (error) {
       console.error('Failed to add to history:', error);
       get().fetchUserData();
+    }
+  },
+
+  removeFromHistory: async (movieSlug: string) => {
+    const { isAuthenticated } = useAuthStore.getState();
+    if (!isAuthenticated) return;
+
+    // Optimistic update
+    const currentHistory = get().history;
+    set({
+      history: currentHistory.filter(h => h.movieSlug !== movieSlug)
+    });
+
+    try {
+      await backendApi.delete(`/user/history/${movieSlug}`);
+    } catch (error) {
+      console.error('Failed to remove from history:', error);
+      toast.error('Không thể xoá lịch sử');
+      get().fetchUserData(); // Revert on failure
     }
   },
 
