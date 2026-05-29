@@ -58,9 +58,9 @@ export const FilterBar = () => {
         <span>Lọc Phim</span>
       </div>
 
-      <div className="flex-1 grid grid-cols-1 sm:grid-cols-3 gap-4 w-full">
+      <div className="flex-1 flex flex-nowrap overflow-x-auto whitespace-nowrap gap-3 pb-2 scrollbar-hide w-full [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
         {/* Category Dropdown */}
-        <div className="relative">
+        <div className="relative min-w-[160px] sm:min-w-0 sm:flex-1">
           <select
             value={searchParams.get('category') || ''}
             onChange={(e) => handleFilterChange('category', e.target.value)}
@@ -75,7 +75,7 @@ export const FilterBar = () => {
         </div>
 
         {/* Country Dropdown */}
-        <div className="relative">
+        <div className="relative min-w-[160px] sm:min-w-0 sm:flex-1">
           <select
             value={searchParams.get('country') || ''}
             onChange={(e) => handleFilterChange('country', e.target.value)}
@@ -90,7 +90,7 @@ export const FilterBar = () => {
         </div>
 
         {/* Year Dropdown */}
-        <div className="relative">
+        <div className="relative min-w-[160px] sm:min-w-0 sm:flex-1">
           <select
             value={searchParams.get('year') || ''}
             onChange={(e) => handleFilterChange('year', e.target.value)}

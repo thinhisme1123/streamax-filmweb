@@ -299,10 +299,23 @@ export const ActorPage = () => {
 
   if (!actor) return null;
 
+  const getLatinName = (data: TmdbActor) => {
+    const isLatin = /^[a-zA-Z\s-.,]+$/;
+    if (isLatin.test(data.name)) return data.name;
+
+    if (data.also_known_as && data.also_known_as.length > 0) {
+      for (const name of data.also_known_as) {
+        if (isLatin.test(name)) return name;
+      }
+    }
+    return data.name;
+  };
+
   const knownName = actor.also_known_as?.[0];
+  const latinName = getLatinName(actor);
 
   return (
-    <div className="min-h-screen bg-dark">
+    <div className="min-h-screen bg-dark pt-20">
 
       {/* ─── Hero Background Blur ────────────────────────────────────────────── */}
       <div className="relative h-72 md:h-80 overflow-hidden">
@@ -363,9 +376,9 @@ export const ActorPage = () => {
           <div className="flex-1 min-w-0 pt-2 md:pt-8">
             <motion.div custom={1} variants={fadeUp} initial="hidden" animate="visible">
               <h1 className="text-3xl md:text-5xl font-black text-white mb-1 leading-tight">
-                {actor.name}
+                {latinName}
               </h1>
-              {knownName && knownName !== actor.name && (
+              {knownName && knownName !== latinName && knownName !== actor.name && (
                 <p className="text-gray-400 text-base mb-3 italic">{knownName}</p>
               )}
             </motion.div>

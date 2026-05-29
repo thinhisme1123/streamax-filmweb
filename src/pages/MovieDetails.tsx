@@ -325,7 +325,7 @@ export const MovieDetails = () => {
               variants={fadeIn}
               initial="hidden"
               animate="visible"
-              className="flex flex-wrap items-center gap-4 mb-8"
+              className="flex flex-wrap items-center justify-center md:justify-start gap-4 mb-8"
             >
               <button
                 onClick={handlePlayFirst}
@@ -552,22 +552,24 @@ export const MovieDetails = () => {
             {/* Comment Form */}
             {user ? (
               <form onSubmit={handleSubmitComment} className="mb-10 bg-black/20 p-5 rounded-xl border border-white/5">
-                <div className="flex items-center gap-2 mb-4">
+                <div className="flex flex-wrap items-center gap-2 mb-4">
                   <span className="text-gray-300 text-sm font-medium mr-2">Đánh giá:</span>
-                  {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((star) => (
-                    <button
-                      key={star}
-                      type="button"
-                      onClick={() => setRating(star)}
-                      onMouseEnter={() => setHoverRating(star)}
-                      onMouseLeave={() => setHoverRating(0)}
-                      className="focus:outline-none transition-transform hover:scale-110"
-                    >
-                      <Star
-                        className={`w-6 h-6 ${(hoverRating || rating) >= star ? 'text-yellow-500 fill-yellow-500' : 'text-gray-600'}`}
-                      />
-                    </button>
-                  ))}
+                  <div className="flex gap-0.5 sm:gap-1">
+                    {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((star) => (
+                      <button
+                        key={star}
+                        type="button"
+                        onClick={() => setRating(star)}
+                        onMouseEnter={() => setHoverRating(star)}
+                        onMouseLeave={() => setHoverRating(0)}
+                        className="focus:outline-none transition-transform hover:scale-110"
+                      >
+                        <Star
+                          className={`w-5 h-5 md:w-6 md:h-6 cursor-pointer transition-colors ${(hoverRating || rating) >= star ? 'text-yellow-500 fill-yellow-500' : 'text-gray-600'}`}
+                        />
+                      </button>
+                    ))}
+                  </div>
                 </div>
                 <div className="relative">
                   <textarea

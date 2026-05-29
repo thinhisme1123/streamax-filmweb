@@ -207,7 +207,7 @@ export const Header = () => {
         {/* Right actions */}
         <div className="flex items-center gap-3 md:gap-5">
           {/* Search */}
-          <div ref={searchRef} className="relative">
+          <div ref={searchRef} className="relative hidden md:block">
             <AnimatePresence mode="wait">
               {isSearchOpen ? (
                 <motion.form
