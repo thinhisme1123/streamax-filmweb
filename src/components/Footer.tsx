@@ -5,7 +5,7 @@ export const Footer = () => {
     <footer className="bg-dark text-gray-400 py-12 px-4 md:px-12 border-t border-white/10 mt-20">
       <div className="max-w-6xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8">
         <div>
-          <h3 className="text-white text-lg font-semibold mb-4">StreaMax</h3>
+          <h3 className="text-white text-lg font-semibold mb-4">TTfilm</h3>
           <p className="text-sm">Premium cinematic experience at your fingertips.</p>
         </div>
         <div>
@@ -33,7 +33,7 @@ export const Footer = () => {
         </div>
       </div>
       <div className="max-w-6xl mx-auto mt-12 pt-8 border-t border-white/10 text-sm text-center">
-        &copy; {new Date().getFullYear()} StreaMax. All rights reserved.
+        &copy; {new Date().getFullYear()} TTfilm. All rights reserved.
       </div>
     </footer>
   );

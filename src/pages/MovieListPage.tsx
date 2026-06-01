@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
-import { useParams, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+import { useParams, useLocation, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ChevronLeft, ChevronRight, Tag, Globe, Calendar, ListVideo } from 'lucide-react';
 import { FilterBar } from '../components/FilterBar';
 import { MovieGrid, MovieGridSkeleton } from '../components/MovieGrid';
-import { getCategoryMovies, getCountryMovies, getListMoviesPaginated, getYearMovies, searchMovies } from '../services/api';
+import { getCategoryMovies, getCountryMovies, getListMoviesPaginated, getYearMovies } from '../services/api';
 import { AppMovie, PaginationInfo } from '../types/movie';
 
 const DEFAULT_PAGINATION: PaginationInfo = {
@@ -17,7 +17,7 @@ const DEFAULT_PAGINATION: PaginationInfo = {
 export const MovieListPage = () => {
   const { type, slug, year } = useParams<{ type?: string; slug?: string; year?: string }>();
   const location = useLocation();
-  const navigate = useNavigate();
+
 
   const [searchParams, setSearchParams] = useSearchParams();
   const pageParam = parseInt(searchParams.get('page') || '1', 10);

@@ -131,7 +131,7 @@ const TmdbMovieCard = ({ credit, isResolving, isDisabled, onClickResolve }: Tmdb
             <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center shadow-lg shadow-primary/40">
               <Play className="w-5 h-5 text-white fill-white" />
             </div>
-            <span className="text-white text-xs font-medium px-2 text-center leading-tight">Xem phim trên StreamAx</span>
+            <span className="text-white text-xs font-medium px-2 text-center leading-tight">Xem phim trên TTfilm</span>
           </div>
         )}
       </div>
@@ -193,7 +193,7 @@ export const ActorPage = () => {
       }
 
       // ── Both attempts failed ───────────────────────────────────────────
-      toast.error('Phim này hiện chưa có trên hệ thống StreamAx.', {
+      toast.error('Phim này hiện chưa có trên hệ thống TTfilm.', {
         icon: '😔',
         duration: 4000,
       });
@@ -468,7 +468,7 @@ export const ActorPage = () => {
           <div className="flex items-start gap-3 bg-blue-500/10 border border-blue-500/20 rounded-xl px-4 py-3 mb-6">
             <Film className="w-4 h-4 text-blue-400 mt-0.5 shrink-0" />
             <p className="text-blue-300 text-xs leading-relaxed">
-              Nhấn vào phim bất kỳ — hệ thống sẽ tự động tìm và chuyển bạn đến trang xem phim trên StreamAx.
+              Nhấn vào phim bất kỳ — hệ thống sẽ tự động tìm và chuyển bạn đến trang xem phim trên TTfilm.
             </p>
           </div>
 

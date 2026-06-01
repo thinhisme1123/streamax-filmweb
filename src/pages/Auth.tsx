@@ -165,7 +165,7 @@ export const Auth = () => {
         <div className="mt-12 text-gray-400 text-sm">
           {isLogin ? (
             <p>
-              Bạn mới biết đến StreaMax?{' '}
+              Bạn mới biết đến TTfilm?{' '}
               <button 
                 type="button" 
                 onClick={handleToggleMode} 

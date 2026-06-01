@@ -1,18 +1,15 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
-<<<<<<< HEAD
 import { motion } from 'framer-motion';
-import { Play, ArrowLeft, Star, Clock, Globe, Film, Users, Clapperboard, MonitorPlay, ChevronDown, ChevronUp } from 'lucide-react';
-=======
-import { motion, AnimatePresence } from 'framer-motion';
-import { Play, ArrowLeft, Star, Clock, Globe, Film, Users, Clapperboard, MonitorPlay, ChevronDown, ChevronUp, MessageSquare, Send, UserCircle } from 'lucide-react';
->>>>>>> 85ccd1d (feat: implement user profile management with watch history and password security features)
+import { Play, ArrowLeft, Star, Clock, Globe, Film, Users, Clapperboard, MonitorPlay, ChevronDown, ChevronUp, MessageSquare, Send, UserCircle, Sparkles, ChevronLeft, ChevronRight } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
 import { useMovieDetail } from '../hooks/useMovieDetail';
 import { useBookmarks } from '../hooks/useBookmarks';
-import { AppEpisode } from '../types/movie';
+import { AppEpisode, AppMovie } from '../types/movie';
 import { FavoriteButton } from '../components/FavoriteButton';
+import { MovieCard } from '../components/MovieCard';
 import { useAuthStore } from '../store/authStore';
+import { getCategoryMovies } from '../services/api';
 import { backendApi } from '../services/backendApi';
 import toast from 'react-hot-toast';
 
@@ -68,6 +65,20 @@ export const MovieDetails = () => {
   const location = useLocation();
   const { user } = useAuthStore();
 
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  const scrollLeft = () => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollBy({ left: -300, behavior: 'smooth' });
+    }
+  };
+
+  const scrollRight = () => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollBy({ left: 300, behavior: 'smooth' });
+    }
+  };
+
   const [activeChunkIndex, setActiveChunkIndex] = useState(0);
   const CHUNK_SIZE = 100;
 
@@ -76,6 +87,9 @@ export const MovieDetails = () => {
   const [commentText, setCommentText] = useState('');
   const [rating, setRating] = useState(10);
   const [hoverRating, setHoverRating] = useState(0);
+
+  // Recommended movies state
+  const [recommendedMovies, setRecommendedMovies] = useState<AppMovie[] | null>(null);
 
   const currentServer = movie?.episodes ? movie.episodes[activeServer] : null;
 
@@ -97,6 +111,33 @@ export const MovieDetails = () => {
     window.scrollTo(0, 0);
   }, [movieSlug]);
 
+  // Fetch recommended movies based on the first genre category
+  useEffect(() => {
+    if (!movie) return;
+
+    const mainCategorySlug = movie.genres?.[0]?.slug;
+    if (!mainCategorySlug) {
+      setRecommendedMovies(null);
+      return;
+    }
+
+    const controller = new AbortController();
+
+    getCategoryMovies(mainCategorySlug, 1)
+      .then((result) => {
+        if (controller.signal.aborted) return;
+        const rawMovies = result.movies || [];
+        const filteredMovies = rawMovies.filter((m) => m.slug !== movie.slug && m.id !== movie.id);
+        const topTenMovies = filteredMovies.slice(0, 10);
+        setRecommendedMovies(topTenMovies.length > 0 ? topTenMovies : null);
+      })
+      .catch(() => {
+        if (!controller.signal.aborted) setRecommendedMovies(null);
+      });
+
+    return () => controller.abort();
+  }, [movie]);
+
   // Auto-play episode if passed from Continue Watching
   useEffect(() => {
     if (movie && movie.episodes && location.state?.autoPlayEpisode) {
@@ -104,18 +145,11 @@ export const MovieDetails = () => {
         if (!server.episodes) continue;
         const episode = server.episodes.find(ep => ep.name === location.state.autoPlayEpisode);
         if (episode) {
-<<<<<<< HEAD
-          navigate(`/xem-phim/${movie.slug}/${episode.slug}`);
-          // Clean up state so a refresh doesn't trigger it again
-          window.history.replaceState({}, document.title);
-          
-=======
           // Clean up state so a refresh doesn't trigger it again
           window.history.replaceState({}, document.title);
           
           const serverIndex = movie.episodes.indexOf(server);
           navigate(`/xem-phim/${movie.slug}/${episode.slug}?server=${serverIndex}`);
->>>>>>> 85ccd1d (feat: implement user profile management with watch history and password security features)
           break;
         }
       }
@@ -156,13 +190,9 @@ export const MovieDetails = () => {
   const displayCast = showAllCast ? (movie.cast || []) : (movie.cast || []).slice(0, 6);
 
   const handlePlayEpisode = (episode: AppEpisode) => {
-<<<<<<< HEAD
-    navigate(`/xem-phim/${movie.slug}/${episode.slug}`);
-=======
     if (movie) {
       navigate(`/xem-phim/${movie.slug}/${episode.slug}?server=${activeServer}`);
     }
->>>>>>> 85ccd1d (feat: implement user profile management with watch history and password security features)
   };
 
   const handlePlayFirst = () => {
@@ -504,20 +534,12 @@ export const MovieDetails = () => {
           {/* Episode grid */}
           {currentServer && episodeChunks[activeChunkIndex] && (
             <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10 gap-2.5">
-<<<<<<< HEAD
-              {currentServer.episodes.map((ep) => {
-=======
               {(episodeChunks[activeChunkIndex] || []).map((ep) => {
->>>>>>> 85ccd1d (feat: implement user profile management with watch history and password security features)
                 return (
                   <button
                     key={ep.slug}
                     onClick={() => handlePlayEpisode(ep)}
-<<<<<<< HEAD
-                    className={`relative px-3 py-3 rounded-lg text-sm font-medium transition-all duration-200 group overflow-hidden bg-white/5 text-gray-300 border border-white/10 hover:bg-primary/20 hover:border-primary/50 hover:text-white`}
-=======
                     className="relative px-3 py-3 rounded-lg text-sm font-medium transition-all duration-200 group overflow-hidden bg-white/5 text-gray-300 border border-white/10 hover:bg-primary/20 hover:border-primary/50 hover:text-white"
->>>>>>> 85ccd1d (feat: implement user profile management with watch history and password security features)
                   >
                     {/* Shine effect on hover */}
                     <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
@@ -592,7 +614,7 @@ export const MovieDetails = () => {
                 <MessageSquare className="w-12 h-12 text-gray-600 mx-auto mb-3" />
                 <p className="text-gray-400 mb-4">Bạn cần đăng nhập để tham gia bình luận và đánh giá phim</p>
                 <button
-                  onClick={() => navigate('/login')}
+                  onClick={() => navigate('/auth')}
                   className="bg-primary hover:bg-primary-hover text-white px-6 py-2.5 rounded-lg font-medium transition-colors"
                 >
                   Đăng nhập để bình luận
@@ -636,6 +658,49 @@ export const MovieDetails = () => {
                 </div>
               )}
             </div>
+          </div>
+        </motion.div>
+      )}
+
+      {/* ===== RECOMMENDED MOVIES ===== */}
+      {recommendedMovies && recommendedMovies.length > 0 && (
+        <motion.div
+          custom={10}
+          variants={fadeIn}
+          initial="hidden"
+          animate="visible"
+          className="max-w-7xl mx-auto px-4 md:px-12 mt-16 mb-8 relative"
+        >
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-xl md:text-2xl font-bold text-white flex items-center gap-3">
+              <Sparkles className="w-6 h-6 text-primary" />
+              CÓ THỂ BẠN CŨNG THÍCH
+            </h3>
+            <div className="flex gap-2">
+              <button
+                onClick={scrollLeft}
+                className="bg-white/10 hover:bg-white/20 p-2 rounded-full transition-colors text-white border border-white/5"
+              >
+                <ChevronLeft className="w-5 h-5" />
+              </button>
+              <button
+                onClick={scrollRight}
+                className="bg-white/10 hover:bg-white/20 p-2 rounded-full transition-colors text-white border border-white/5"
+              >
+                <ChevronRight className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+
+          <div 
+            ref={scrollRef}
+            className="flex flex-nowrap overflow-x-auto whitespace-nowrap gap-4 pb-4 scrollbar-hide scroll-smooth"
+          >
+            {recommendedMovies.map((recMovie) => (
+              <div key={recMovie.id} className="shrink-0 w-64 md:w-72">
+                <MovieCard movie={recMovie} />
+              </div>
+            ))}
           </div>
         </motion.div>
       )}

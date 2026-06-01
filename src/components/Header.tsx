@@ -141,7 +141,7 @@ export const Header = () => {
         {/* Logo + Nav */}
         <div className="flex items-center gap-8">
           <Link to="/" className="text-primary text-2xl md:text-3xl font-black uppercase tracking-widest hover:text-primary-hover transition">
-            StreaMax
+            TTfilm
           </Link>
           <nav className="hidden lg:flex items-center gap-6 text-sm font-medium">
             <Link to="/" className={`hover:text-white transition ${location.pathname === '/' ? 'text-white' : 'text-gray-300'}`}>
