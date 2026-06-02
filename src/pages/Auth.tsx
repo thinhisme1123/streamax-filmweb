@@ -69,20 +69,82 @@ export const Auth = () => {
   };
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center bg-dark">
-      <div className="absolute inset-0">
-        <img
-          src="https://images.unsplash.com/photo-1574267432553-4b4628081524?q=80&w=1632&auto=format&fit=crop"
-          alt="Background"
-          className="w-full h-full object-cover opacity-30"
-        />
-        <div className="absolute inset-0 bg-black/60" />
-      </div>
+    <>
+      <style>{`
+        .video-background {
+          position: fixed;
+          top: 50%;
+          left: 50%;
+          min-width: 100%;
+          min-height: 100%;
+          width: auto;
+          height: auto;
+          z-index: -2;
+          transform: translateX(-50%) translateY(-50%);
+          object-fit: cover;
+        }
 
-      <div className="relative z-10 w-full max-w-md p-8 bg-black/80 rounded-lg shadow-2xl border border-white/10 mx-4">
-        <h2 className="text-3xl font-bold text-white mb-8">
-          {isLogin ? 'Đăng nhập' : 'Đăng ký'}
-        </h2>
+        .neon-wrapper {
+          position: relative;
+          padding: 3px;
+          border-radius: 1.25rem;
+          overflow: hidden;
+          box-shadow: 0 0 40px rgba(239, 68, 68, 0.2), inset 0 0 20px rgba(249, 115, 22, 0.1);
+        }
+        
+        .neon-wrapper::before,
+        .neon-wrapper::after {
+          content: "";
+          position: absolute;
+          top: -50%;
+          left: -50%;
+          width: 200%;
+          height: 200%;
+          z-index: -1;
+          filter: blur(2px);
+        }
+        
+        .neon-wrapper::before {
+          background: conic-gradient(from 0deg, transparent 70%, #ef4444 80%, #f97316 100%);
+          animation: rotateNeon 4s linear infinite;
+        }
+        
+        .neon-wrapper::after {
+          background: conic-gradient(from 180deg, transparent 70%, #ef4444 80%, #f97316 100%);
+          animation: rotateNeon 4s linear infinite;
+        }
+
+        .neon-inner {
+          background: rgba(10, 10, 10, 0.95);
+          border-radius: 1.15rem;
+          position: relative;
+          z-index: 10;
+          backdrop-filter: blur(10px);
+          width: 100%;
+          height: 100%;
+        }
+
+        @keyframes rotateNeon {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+      `}</style>
+      <div className="relative min-h-screen flex items-center justify-center text-white overflow-hidden selection:bg-red-500/30">
+        <video className="video-background" autoPlay loop muted playsInline>
+          <source src="/login-background/marvel-intro-placeholder.mp4.mp4" type="video/mp4" />
+        </video>
+        <div className="absolute inset-0 z-[-1] bg-black/80 backdrop-blur-[2px]" />
+
+        <div className="relative z-10 w-full max-w-[420px] mx-4 neon-wrapper">
+          <div className="neon-inner p-8 md:p-10">
+            <div className="text-center mb-8">
+              <h1 className="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-red-600 to-orange-500 tracking-wider">
+                TTFilm
+              </h1>
+            </div>
+            <h2 className="text-2xl font-bold text-white mb-6 text-center">
+              {isLogin ? 'Đăng nhập' : 'Đăng ký'}
+            </h2>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           <div>
@@ -141,7 +203,7 @@ export const Auth = () => {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full flex items-center justify-center bg-primary text-white font-bold rounded py-3 hover:bg-primary-hover transition mt-6 disabled:opacity-70 disabled:cursor-not-allowed"
+            className="w-full flex items-center justify-center bg-gradient-to-r from-red-600 to-orange-500 hover:from-red-500 hover:to-orange-400 text-white font-bold py-3.5 rounded-lg mt-6 transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-[0_0_20px_rgba(239,68,68,0.3)] disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none"
           >
             {isLoading ? (
               <>
@@ -186,8 +248,10 @@ export const Auth = () => {
               </button>.
             </p>
           )}
+          </div>
         </div>
       </div>
     </div>
+    </>
   );
 };
