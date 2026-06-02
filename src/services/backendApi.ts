@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 export const backendApi = axios.create({
-  baseURL: 'http://localhost:5000/api', // Backend running on port 5000
+  baseURL: import.meta.env.VITE_API_URL ? `${import.meta.env.VITE_API_URL}/api` : 'http://localhost:5000/api',
   timeout: 10000,
 });
 
