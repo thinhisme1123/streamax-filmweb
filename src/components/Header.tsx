@@ -70,7 +70,7 @@ export const Header = () => {
     const fetchQuick = async () => {
       try {
         setIsSearching(true);
-        const result = await searchMovies({ keyword: debouncedQuery, page: 1, limit: 10 });
+        const result = await searchMovies({ keyword: debouncedQuery, page: 1, limit: 12 });
         setQuickResults(result.movies.slice(0, 6));
         setShowDropdown(true);
       } catch {
@@ -113,7 +113,7 @@ export const Header = () => {
     { name: 'Tình Cảm', slug: 'tinh-cam' },
     { name: 'Hài Hước', slug: 'hai-huoc' },
     { name: 'Cổ Trang', slug: 'co-trang' },
-    { name: 'Tâm Lý', slug: 'tam-ly-tinh-cam' },
+    { name: 'Tâm Lý', slug: 'tam-ly' },
     { name: 'Hình Sự', slug: 'hinh-su' },
     { name: 'Chiến Tranh', slug: 'chien-tranh' },
     { name: 'Thể Thao', slug: 'the-thao' },
@@ -134,9 +134,8 @@ export const Header = () => {
   const YEARS = Array.from({ length: 15 }, (_, i) => 2024 - i);
 
   return (
-    <header className={`fixed top-0 w-full z-50 transition-all duration-500 ${
-      isScrolled ? 'bg-dark/95 backdrop-blur-sm shadow-lg shadow-black/20' : 'bg-gradient-to-b from-black/80 to-transparent'
-    }`}>
+    <header className={`fixed top-0 w-full z-50 transition-all duration-500 ${isScrolled ? 'bg-dark/95 backdrop-blur-sm shadow-lg shadow-black/20' : 'bg-gradient-to-b from-black/80 to-transparent'
+      }`}>
       <div className="flex items-center justify-between px-4 md:px-12 py-4">
         {/* Logo + Nav */}
         <div className="flex items-center gap-8">

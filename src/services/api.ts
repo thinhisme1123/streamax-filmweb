@@ -15,7 +15,7 @@ export const getNewUpdatedMovies = async (page = 1): Promise<AppMovie[]> => {
 };
 
 export const getMoviesList = async (type: string, page = 1): Promise<AppMovie[]> => {
-  const response = await api.get<ApiResponse>(`/v1/api/danh-sach/${type}?page=${page}`);
+  const response = await api.get<ApiResponse>(`/v1/api/danh-sach/${type}`, { params: { page, limit: 12 } });
   const data = response.data;
   if (!data.status || !data.data) throw new Error(`Failed to fetch movies for type ${type}`);
   const items = data.data.items || [];
@@ -100,26 +100,26 @@ export const getCountries = async (): Promise<AppCategory[]> => {
 };
 
 export const getCategoryMovies = async (slug: string, page = 1, extraParams: Record<string, string> = {}): Promise<MovieListResult> => {
-  const response = await api.get<ApiListResponse>(`/v1/api/the-loai/${slug}`, { params: { page, ...extraParams } });
+  const response = await api.get<ApiListResponse>(`/v1/api/the-loai/${slug}`, { params: { page, limit: 12, ...extraParams } });
   if (!response.data.status) throw new Error(`Failed to fetch category: ${slug}`);
   return normalizePaginatedResponse(response);
 };
 
 export const getCountryMovies = async (slug: string, page = 1, extraParams: Record<string, string> = {}): Promise<MovieListResult> => {
-  const response = await api.get<ApiListResponse>(`/v1/api/quoc-gia/${slug}`, { params: { page, ...extraParams } });
+  const response = await api.get<ApiListResponse>(`/v1/api/quoc-gia/${slug}`, { params: { page, limit: 12, ...extraParams } });
   if (!response.data.status) throw new Error(`Failed to fetch country: ${slug}`);
   return normalizePaginatedResponse(response);
 };
 
 export const getListMoviesPaginated = async (type: string, page = 1, extraParams: Record<string, string> = {}): Promise<MovieListResult> => {
-  const response = await api.get<ApiListResponse>(`/v1/api/danh-sach/${type}`, { params: { page, ...extraParams } });
+  const response = await api.get<ApiListResponse>(`/v1/api/danh-sach/${type}`, { params: { page, limit: 12, ...extraParams } });
   if (!response.data.status) throw new Error(`Failed to fetch list: ${type}`);
   return normalizePaginatedResponse(response);
 };
 
 export const getYearMovies = async (year: string, page = 1, extraParams: Record<string, string> = {}): Promise<MovieListResult> => {
   // Try checking if this API actually works, usually it returns the same format
-  const response = await api.get<ApiListResponse>(`/v1/api/nam/${year}`, { params: { page, ...extraParams } });
+  const response = await api.get<ApiListResponse>(`/v1/api/nam/${year}`, { params: { page, limit: 12, ...extraParams } });
   if (!response.data.status) throw new Error(`Failed to fetch movies for year: ${year}`);
   return normalizePaginatedResponse(response);
 };
