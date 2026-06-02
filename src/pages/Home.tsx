@@ -12,7 +12,7 @@ export const Home = () => {
     window.scrollTo(0, 0);
   }, []);
 
-  const { heroMovies, newMovies, tvSeries, animations, loading, error } = useMovies();
+  const { heroMovies, newMovies, tvSeries, animations, vietsubMovies, thuyetMinhMovies, longTiengMovies, loading, error } = useMovies();
   const { history } = useUserStore();
   const { isAuthenticated } = useAuthStore();
 
@@ -67,6 +67,30 @@ export const Home = () => {
           title="Hoạt Hình - Anime"
           movies={animations}
           viewAllLink="/danh-sach/hoat-hinh"
+          isLoading={loading}
+        />
+
+        {/* Phim Vietsub */}
+        <MovieRow
+          title="PHIM VIETSUB MỚI"
+          movies={vietsubMovies}
+          viewAllLink="/danh-sach/phim-vietsub"
+          isLoading={loading}
+        />
+
+        {/* Phim Thuyet Minh */}
+        <MovieRow
+          title="PHIM THUYẾT MINH"
+          movies={thuyetMinhMovies}
+          viewAllLink="/danh-sach/phim-thuyet-minh"
+          isLoading={loading}
+        />
+
+        {/* Phim Long Tieng */}
+        <MovieRow
+          title="PHIM LỒNG TIẾNG"
+          movies={longTiengMovies}
+          viewAllLink="/danh-sach/phim-long-tieng"
           isLoading={loading}
         />
       </div>

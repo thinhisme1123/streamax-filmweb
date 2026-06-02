@@ -3,6 +3,7 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Play, ArrowLeft, Star, Clock, Globe, Film, Users, Clapperboard, MonitorPlay, ChevronDown, ChevronUp, MessageSquare, Send, UserCircle, Sparkles, ChevronLeft, ChevronRight } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
+import axios from 'axios';
 import { useMovieDetail } from '../hooks/useMovieDetail';
 import { useBookmarks } from '../hooks/useBookmarks';
 import { AppEpisode, AppMovie } from '../types/movie';
@@ -91,6 +92,9 @@ export const MovieDetails = () => {
   // Recommended movies state
   const [recommendedMovies, setRecommendedMovies] = useState<AppMovie[] | null>(null);
 
+  // TMDB Rating state
+  const [tmdbRating, setTmdbRating] = useState<number | null>(null);
+
   const currentServer = movie?.episodes ? movie.episodes[activeServer] : null;
 
   const episodeChunks = useMemo(() => {
@@ -165,6 +169,36 @@ export const MovieDetails = () => {
           setComments([]);
         });
     }
+  }, [movie]);
+
+  // Fetch TMDB rating by direct ID
+  useEffect(() => {
+    if (!movie) return;
+
+    const tmdbId = movie.tmdb?.id;
+    const tmdbType = movie.tmdb?.type === 'tv' ? 'tv' : 'movie';
+    const apiKey = import.meta.env.VITE_TMDB_API_KEY;
+
+    if (!tmdbId || !apiKey) return;
+
+    const controller = new AbortController();
+
+    axios
+      .get(`https://api.themoviedb.org/3/${tmdbType}/${tmdbId}`, {
+        params: { api_key: apiKey },
+        signal: controller.signal,
+      })
+      .then((res) => {
+        const vote = res.data?.vote_average;
+        if (vote && vote > 0) {
+          setTmdbRating(vote);
+        }
+      })
+      .catch(() => {
+        // Silently fail — rating simply won't show
+      });
+
+    return () => controller.abort();
   }, [movie]);
 
   if (loading) return <DetailSkeleton />;
@@ -333,6 +367,11 @@ export const MovieDetails = () => {
               <span className="flex items-center gap-1.5 bg-primary/15 text-primary border border-primary/30 px-3 py-1.5 rounded-full text-sm font-medium">
                 <Star className="w-3.5 h-3.5" /> {movie.year}
               </span>
+              {tmdbRating !== null && tmdbRating > 0 && (
+                <span className="flex items-center gap-1.5 bg-yellow-500/15 text-yellow-400 border border-yellow-500/30 px-3 py-1.5 rounded-full text-sm font-semibold">
+                  <Star className="w-3.5 h-3.5 fill-yellow-400" /> IMDB {tmdbRating.toFixed(1)}
+                </span>
+              )}
               <span className="flex items-center gap-1.5 bg-white/5 border border-white/10 px-3 py-1.5 rounded-full text-sm text-gray-300">
                 <Clock className="w-3.5 h-3.5" /> {movie.duration}
               </span>

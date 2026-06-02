@@ -7,6 +7,9 @@ export const useMovies = () => {
   const [newMovies, setNewMovies] = useState<AppMovie[]>([]);
   const [tvSeries, setTvSeries] = useState<AppMovie[]>([]);
   const [animations, setAnimations] = useState<AppMovie[]>([]);
+  const [vietsubMovies, setVietsubMovies] = useState<AppMovie[]>([]);
+  const [thuyetMinhMovies, setThuyetMinhMovies] = useState<AppMovie[]>([]);
+  const [longTiengMovies, setLongTiengMovies] = useState<AppMovie[]>([]);
   
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -17,17 +20,23 @@ export const useMovies = () => {
         setLoading(true);
         setError(null);
         
-        const [hero, movies, series, anims] = await Promise.all([
+        const [hero, movies, series, anims, vietsub, thuyetMinh, longTieng] = await Promise.all([
           getNewUpdatedMovies(1),
           getMoviesList('phim-le', 1),
           getMoviesList('phim-bo', 1),
-          getMoviesList('hoat-hinh', 1)
+          getMoviesList('hoat-hinh', 1),
+          getMoviesList('phim-vietsub', 1),
+          getMoviesList('phim-thuyet-minh', 1),
+          getMoviesList('phim-long-tieng', 1)
         ]);
 
         setHeroMovies(hero);
         setNewMovies(movies);
         setTvSeries(series);
         setAnimations(anims);
+        setVietsubMovies(vietsub);
+        setThuyetMinhMovies(thuyetMinh);
+        setLongTiengMovies(longTieng);
       } catch (err: any) {
         setError(err.message || "Something went wrong fetching data.");
       } finally {
@@ -38,5 +47,5 @@ export const useMovies = () => {
     fetchAllData();
   }, []);
 
-  return { heroMovies, newMovies, tvSeries, animations, loading, error };
+  return { heroMovies, newMovies, tvSeries, animations, vietsubMovies, thuyetMinhMovies, longTiengMovies, loading, error };
 };

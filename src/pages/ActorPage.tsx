@@ -6,7 +6,7 @@ import toast from 'react-hot-toast';
 import { searchMovies } from '../services/api';
 
 // ─── TMDB Constants ──────────────────────────────────────────────────────────
-const TMDB_API_KEY = '92734d838a135ec9fcf9f1f255bb08a4';
+const TMDB_API_KEY = import.meta.env.VITE_TMDB_API_KEY;
 const TMDB_BASE    = 'https://api.themoviedb.org/3';
 const TMDB_IMG     = 'https://image.tmdb.org/t/p/w500';
 const TMDB_POSTER  = 'https://image.tmdb.org/t/p/w342';

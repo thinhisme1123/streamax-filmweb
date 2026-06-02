@@ -117,6 +117,7 @@ export interface ApiMovieDetail {
   director: string[];
   category: { id: string; name: string; slug: string }[];
   country: { id: string; name: string; slug: string }[];
+  tmdb?: { type?: string; id?: string; season?: number; vote_average?: number; vote_count?: number };
 }
 
 export interface ApiDetailResponse {
@@ -169,6 +170,7 @@ export interface AppMovieDetail {
   genres: { name: string; slug: string }[];
   countries: { name: string; slug: string }[];
   episodes: AppEpisodeServer[];
+  tmdb?: { type?: string; id?: string };
 }
 
 export interface AppEpisodeServer {
@@ -250,5 +252,6 @@ export const normalizeMovieDetail = (data: ApiDetailResponse): AppMovieDetail =>
         linkM3u8: ep.link_m3u8,
       })) || [],
     })) || [],
+    tmdb: movie.tmdb ? { type: movie.tmdb.type, id: movie.tmdb.id } : undefined,
   };
 };
