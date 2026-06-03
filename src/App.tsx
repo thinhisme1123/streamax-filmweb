@@ -13,6 +13,7 @@ import { WatchMovie } from './pages/WatchMovie';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { Profile } from './pages/Profile';
 import { ActorPage } from './pages/ActorPage';
+import { ForgotPassword } from './pages/ForgotPassword';
 
 function App() {
   return (
@@ -28,6 +29,7 @@ function App() {
       />
       <Routes>
         <Route path="/auth" element={<Auth />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/watch/:id" element={<Watch />} />
         <Route path="/xem-phim/:movieSlug/:episodeSlug" element={<WatchMovie />} />
         <Route path="/watch-party/:roomId" element={<WatchRoom />} />

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useAuthStore } from '../store/authStore';
 import { useForm } from 'react-hook-form';
@@ -52,13 +52,13 @@ export const Auth = () => {
 
   const onSubmit = async (data: AuthFormData) => {
     let success = false;
-    
+
     if (isLogin) {
       success = await login(data.email, data.password);
     } else {
       success = await apiRegister(data.email, data.password);
     }
-    
+
     if (success) {
       toast.success(isLogin ? 'Đăng nhập thành công!' : 'Đăng ký thành công!');
       navigate('/');
@@ -146,112 +146,112 @@ export const Auth = () => {
               {isLogin ? 'Đăng nhập' : 'Đăng ký'}
             </h2>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          <div>
-            <input
-              type="email"
-              {...register('email')}
-              placeholder="Email"
-              className={twMerge(
-                "w-full bg-dark-light/70 text-white rounded px-4 py-3 outline-none focus:ring-2 focus:bg-dark-light transition border",
-                errors.email 
-                  ? "border-red-500 focus:border-red-500 focus:ring-red-500" 
-                  : "border-transparent focus:ring-primary"
-              )}
-            />
-            {errors.email && (
-              <p className="text-red-500 text-sm mt-1.5">{errors.email.message}</p>
-            )}
-          </div>
-
-          <div>
-            <input
-              type="password"
-              {...register('password')}
-              placeholder="Mật khẩu"
-              className={twMerge(
-                "w-full bg-dark-light/70 text-white rounded px-4 py-3 outline-none focus:ring-2 focus:bg-dark-light transition border",
-                errors.password 
-                  ? "border-red-500 focus:border-red-500 focus:ring-red-500" 
-                  : "border-transparent focus:ring-primary"
-              )}
-            />
-            {errors.password && (
-              <p className="text-red-500 text-sm mt-1.5">{errors.password.message}</p>
-            )}
-          </div>
-
-          {!isLogin && (
-            <div>
-              <input
-                type="password"
-                {...register('confirmPassword')}
-                placeholder="Xác nhận mật khẩu"
-                className={twMerge(
-                  "w-full bg-dark-light/70 text-white rounded px-4 py-3 outline-none focus:ring-2 focus:bg-dark-light transition border",
-                  errors.confirmPassword 
-                    ? "border-red-500 focus:border-red-500 focus:ring-red-500" 
-                    : "border-transparent focus:ring-primary"
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+              <div>
+                <input
+                  type="email"
+                  {...register('email')}
+                  placeholder="Email"
+                  className={twMerge(
+                    "w-full bg-dark-light/70 text-white rounded px-4 py-3 outline-none focus:ring-2 focus:bg-dark-light transition border",
+                    errors.email
+                      ? "border-red-500 focus:border-red-500 focus:ring-red-500"
+                      : "border-transparent focus:ring-primary"
+                  )}
+                />
+                {errors.email && (
+                  <p className="text-red-500 text-sm mt-1.5">{errors.email.message}</p>
                 )}
-              />
-              {errors.confirmPassword && (
-                <p className="text-red-500 text-sm mt-1.5">{errors.confirmPassword.message}</p>
+              </div>
+
+              <div>
+                <input
+                  type="password"
+                  {...register('password')}
+                  placeholder="Mật khẩu"
+                  className={twMerge(
+                    "w-full bg-dark-light/70 text-white rounded px-4 py-3 outline-none focus:ring-2 focus:bg-dark-light transition border",
+                    errors.password
+                      ? "border-red-500 focus:border-red-500 focus:ring-red-500"
+                      : "border-transparent focus:ring-primary"
+                  )}
+                />
+                {errors.password && (
+                  <p className="text-red-500 text-sm mt-1.5">{errors.password.message}</p>
+                )}
+              </div>
+
+              {!isLogin && (
+                <div>
+                  <input
+                    type="password"
+                    {...register('confirmPassword')}
+                    placeholder="Xác nhận mật khẩu"
+                    className={twMerge(
+                      "w-full bg-dark-light/70 text-white rounded px-4 py-3 outline-none focus:ring-2 focus:bg-dark-light transition border",
+                      errors.confirmPassword
+                        ? "border-red-500 focus:border-red-500 focus:ring-red-500"
+                        : "border-transparent focus:ring-primary"
+                    )}
+                  />
+                  {errors.confirmPassword && (
+                    <p className="text-red-500 text-sm mt-1.5">{errors.confirmPassword.message}</p>
+                  )}
+                </div>
+              )}
+
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="w-full flex items-center justify-center bg-gradient-to-r from-red-600 to-orange-500 hover:from-red-500 hover:to-orange-400 text-white font-bold py-3.5 rounded-lg mt-6 transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-[0_0_20px_rgba(239,68,68,0.3)] disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none"
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                    Đang xử lý...
+                  </>
+                ) : (
+                  isLogin ? 'Đăng nhập' : 'Đăng ký'
+                )}
+              </button>
+
+              <div className="flex items-center justify-between text-sm text-gray-400 mt-4">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input type="checkbox" className="accent-gray-500 w-4 h-4" />
+                  Ghi nhớ tài khoản
+                </label>
+                <Link to="/forgot-password" className="hover:underline">Quên mật khẩu?</Link>
+              </div>
+            </form>
+
+            <div className="mt-12 text-gray-400 text-sm">
+              {isLogin ? (
+                <p>
+                  Bạn mới biết đến TTfilm?{' '}
+                  <button
+                    type="button"
+                    onClick={handleToggleMode}
+                    className="text-white hover:underline font-medium"
+                  >
+                    Đăng ký ngay
+                  </button>.
+                </p>
+              ) : (
+                <p>
+                  Đã có tài khoản?{' '}
+                  <button
+                    type="button"
+                    onClick={handleToggleMode}
+                    className="text-white hover:underline font-medium"
+                  >
+                    Đăng nhập ngay
+                  </button>.
+                </p>
               )}
             </div>
-          )}
-
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="w-full flex items-center justify-center bg-gradient-to-r from-red-600 to-orange-500 hover:from-red-500 hover:to-orange-400 text-white font-bold py-3.5 rounded-lg mt-6 transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-[0_0_20px_rgba(239,68,68,0.3)] disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none"
-          >
-            {isLoading ? (
-              <>
-                <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                Đang xử lý...
-              </>
-            ) : (
-              isLogin ? 'Đăng nhập' : 'Đăng ký'
-            )}
-          </button>
-
-          <div className="flex items-center justify-between text-sm text-gray-400 mt-4">
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" className="accent-gray-500 w-4 h-4" />
-              Ghi nhớ tài khoản
-            </label>
-            <a href="#" className="hover:underline">Bạn cần giúp đỡ?</a>
-          </div>
-        </form>
-
-        <div className="mt-12 text-gray-400 text-sm">
-          {isLogin ? (
-            <p>
-              Bạn mới biết đến TTfilm?{' '}
-              <button 
-                type="button" 
-                onClick={handleToggleMode} 
-                className="text-white hover:underline font-medium"
-              >
-                Đăng ký ngay
-              </button>.
-            </p>
-          ) : (
-            <p>
-              Đã có tài khoản?{' '}
-              <button 
-                type="button" 
-                onClick={handleToggleMode} 
-                className="text-white hover:underline font-medium"
-              >
-                Đăng nhập ngay
-              </button>.
-            </p>
-          )}
           </div>
         </div>
       </div>
-    </div>
     </>
   );
 };

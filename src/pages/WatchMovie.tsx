@@ -22,7 +22,7 @@ type CustomArtplayer = Artplayer & {
 // Custom Wrapper for Artplayer + HLS.js
 // Bulletproof architecture: tracks all network requests for instant abort on unmount
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const ArtPlayerWrapper = ({ url, playing, autoplay = true, onReady, onPlay, onPause, onSeek, onEnded, introTime, movieSlug: artMovieSlug, onIntroMarked }: any) => {
+const ArtPlayerWrapper = ({ url, playing, autoplay = true, onReady, onPlay, onPause, onSeek, onEnded, introTime, movieSlug: artMovieSlug, onIntroMarked, isSeries }: any) => {
   const containerRef = useRef<HTMLDivElement>(null);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const artRef = useRef<any>(null);
@@ -186,184 +186,186 @@ const ArtPlayerWrapper = ({ url, playing, autoplay = true, onReady, onPlay, onPa
     artRef.current = art;
 
     // ─── SKIP INTRO / MARK INTRO LAYER ──────────────────────────────
-    // Inject a custom ArtPlayer layer that overlays the bottom-right.
-    // Visibility is toggled by the timeupdate handler below.
-    //
-    // ArtPlayer's .art-layers container uses: position:absolute; inset:0;
-    // display:flex; pointer-events:none. Individual .art-layer children
-    // get pointer-events:auto. We position our inner container absolutely
-    // within the full-size layer wrapper to place it at bottom-right.
-    //
-    // The `mounted` callback is the most reliable way to get a reference
-    // to the injected DOM element — `add()` can return undefined if the
-    // player's $parent isn't ready yet.
-    let skipContainerEl: HTMLElement | null = null;
+    if (isSeries) {
+      // Inject a custom ArtPlayer layer that overlays the bottom-right.
+      // Visibility is toggled by the timeupdate handler below.
+      //
+      // ArtPlayer's .art-layers container uses: position:absolute; inset:0;
+      // display:flex; pointer-events:none. Individual .art-layer children
+      // get pointer-events:auto. We position our inner container absolutely
+      // within the full-size layer wrapper to place it at bottom-right.
+      //
+      // The `mounted` callback is the most reliable way to get a reference
+      // to the injected DOM element — `add()` can return undefined if the
+      // player's $parent isn't ready yet.
+      let skipContainerEl: HTMLElement | null = null;
 
-    art.layers.add({
-      name: 'skipIntroLayer',
-      html: '<div id="skip-intro-container" style="display:none; position:absolute; bottom:80px; right:20px; z-index:90; pointer-events:auto;"></div>',
-      style: {
-        position: 'absolute',
-        inset: '0',
-        width: '100%',
-        height: '100%',
-        pointerEvents: 'none',
-      },
-      mounted: ($el: HTMLElement) => {
-        // $el is the wrapper <div class="art-layer art-layer-skipIntroLayer">
-        // Our #skip-intro-container is inside it
-        skipContainerEl = $el.querySelector('#skip-intro-container') as HTMLElement;
-      },
-    });
+      art.layers.add({
+        name: 'skipIntroLayer',
+        html: '<div id="skip-intro-container" style="display:none; position:absolute; bottom:80px; right:20px; z-index:90; pointer-events:auto;"></div>',
+        style: {
+          position: 'absolute',
+          inset: '0',
+          width: '100%',
+          height: '100%',
+          pointerEvents: 'none',
+        },
+        mounted: ($el: HTMLElement) => {
+          // $el is the wrapper <div class="art-layer art-layer-skipIntroLayer">
+          // Our #skip-intro-container is inside it
+          skipContainerEl = $el.querySelector('#skip-intro-container') as HTMLElement;
+        },
+      });
 
-    // Helper: reliably find the skip-intro container element
-    const getContainer = (): HTMLElement | null => {
-      if (skipContainerEl) return skipContainerEl;
-      // Fallback: search inside the player DOM
-      const el = art.template?.$player?.querySelector?.('#skip-intro-container') as HTMLElement | null;
-      if (el) skipContainerEl = el;
-      return el;
-    };
+      // Helper: reliably find the skip-intro container element
+      const getContainer = (): HTMLElement | null => {
+        if (skipContainerEl) return skipContainerEl;
+        // Fallback: search inside the player DOM
+        const el = art.template?.$player?.querySelector?.('#skip-intro-container') as HTMLElement | null;
+        if (el) skipContainerEl = el;
+        return el;
+      };
 
-    // Build button HTML — we swap content based on state.
-    // Uses innerHTML + addEventListener instead of inline onclick for security.
-    const renderButton = (type: 'skip' | 'mark') => {
-      const container = getContainer();
-      if (!container) return;
+      // Build button HTML — we swap content based on state.
+      // Uses innerHTML + addEventListener instead of inline onclick for security.
+      const renderButton = (type: 'skip' | 'mark') => {
+        const container = getContainer();
+        if (!container) return;
 
-      if (type === 'skip') {
-        container.innerHTML = `
-          <button id="skip-intro-btn" style="
-            display: flex; align-items: center; gap: 8px;
-            padding: 10px 20px;
-            background: linear-gradient(135deg, rgba(229, 62, 62, 0.9), rgba(190, 24, 93, 0.85));
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255,255,255,0.2);
-            border-radius: 12px;
-            color: white; font-size: 14px; font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 20px rgba(229, 62, 62, 0.4);
-            letter-spacing: 0.3px;
-            animation: skipIntroFadeIn 0.3s ease-out;
-          "
-          onmouseover="this.style.transform='scale(1.05)'; this.style.boxShadow='0 6px 28px rgba(229,62,62,0.6)';"
-          onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 4px 20px rgba(229,62,62,0.4)';"
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <polygon points="5 4 15 12 5 20 5 4"/><line x1="19" y1="5" x2="19" y2="19"/>
-            </svg>
-            Bỏ qua Intro
-          </button>
-        `;
-        container.style.display = 'block';
-        const btn = container.querySelector('#skip-intro-btn');
-        if (btn) {
-          btn.addEventListener('click', (e: Event) => {
-            e.stopPropagation();
-            if (artRef.current) {
-              artRef.current.currentTime = artRef.current._introTimeValue ?? 0;
-            }
-            container.style.display = 'none';
-          });
-        }
-      } else if (type === 'mark') {
-        container.innerHTML = `
-          <button id="mark-intro-btn" style="
-            display: flex; align-items: center; gap: 8px;
-            padding: 10px 20px;
-            background: linear-gradient(135deg, rgba(49, 130, 206, 0.85), rgba(56, 178, 172, 0.85));
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255,255,255,0.2);
-            border-radius: 12px;
-            color: white; font-size: 14px; font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 20px rgba(49, 130, 206, 0.4);
-            letter-spacing: 0.3px;
-            animation: skipIntroFadeIn 0.3s ease-out;
-          "
-          onmouseover="this.style.transform='scale(1.05)'; this.style.boxShadow='0 6px 28px rgba(49,130,206,0.6)';"
-          onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 4px 20px rgba(49,130,206,0.4)';"
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M12 2v20M2 12h20"/>
-            </svg>
-            Đánh dấu hết Intro
-          </button>
-        `;
-        container.style.display = 'block';
-        const btn = container.querySelector('#mark-intro-btn');
-        if (btn) {
-          btn.addEventListener('click', (e: Event) => {
-            e.stopPropagation();
-            if (artRef.current) {
-              const markedTime = artRef.current.currentTime;
-              artRef.current._introMarked = true; // immediately set local flag
-              // Notify parent component
-              if (callbacks.current.onIntroMarked) {
-                callbacks.current.onIntroMarked(markedTime);
+        if (type === 'skip') {
+          container.innerHTML = `
+            <button id="skip-intro-btn" style="
+              display: flex; align-items: center; gap: 8px;
+              padding: 10px 20px;
+              background: linear-gradient(135deg, rgba(229, 62, 62, 0.9), rgba(190, 24, 93, 0.85));
+              backdrop-filter: blur(12px);
+              border: 1px solid rgba(255,255,255,0.2);
+              border-radius: 12px;
+              color: white; font-size: 14px; font-weight: 600;
+              cursor: pointer;
+              transition: all 0.3s ease;
+              box-shadow: 0 4px 20px rgba(229, 62, 62, 0.4);
+              letter-spacing: 0.3px;
+              animation: skipIntroFadeIn 0.3s ease-out;
+            "
+            onmouseover="this.style.transform='scale(1.05)'; this.style.boxShadow='0 6px 28px rgba(229,62,62,0.6)';"
+            onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 4px 20px rgba(229,62,62,0.4)';"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="5 4 15 12 5 20 5 4"/><line x1="19" y1="5" x2="19" y2="19"/>
+              </svg>
+              Bỏ qua Intro
+            </button>
+          `;
+          container.style.display = 'block';
+          const btn = container.querySelector('#skip-intro-btn');
+          if (btn) {
+            btn.addEventListener('click', (e: Event) => {
+              e.stopPropagation();
+              if (artRef.current) {
+                artRef.current.currentTime = artRef.current._introTimeValue ?? 0;
               }
               container.style.display = 'none';
+            });
+          }
+        } else if (type === 'mark') {
+          container.innerHTML = `
+            <button id="mark-intro-btn" style="
+              display: flex; align-items: center; gap: 8px;
+              padding: 10px 20px;
+              background: linear-gradient(135deg, rgba(49, 130, 206, 0.85), rgba(56, 178, 172, 0.85));
+              backdrop-filter: blur(12px);
+              border: 1px solid rgba(255,255,255,0.2);
+              border-radius: 12px;
+              color: white; font-size: 14px; font-weight: 600;
+              cursor: pointer;
+              transition: all 0.3s ease;
+              box-shadow: 0 4px 20px rgba(49, 130, 206, 0.4);
+              letter-spacing: 0.3px;
+              animation: skipIntroFadeIn 0.3s ease-out;
+            "
+            onmouseover="this.style.transform='scale(1.05)'; this.style.boxShadow='0 6px 28px rgba(49,130,206,0.6)';"
+            onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 4px 20px rgba(49,130,206,0.4)';"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2v20M2 12h20"/>
+              </svg>
+              Đánh dấu hết Intro
+            </button>
+          `;
+          container.style.display = 'block';
+          const btn = container.querySelector('#mark-intro-btn');
+          if (btn) {
+            btn.addEventListener('click', (e: Event) => {
+              e.stopPropagation();
+              if (artRef.current) {
+                const markedTime = artRef.current.currentTime;
+                artRef.current._introMarked = true; // immediately set local flag
+                // Notify parent component
+                if (callbacks.current.onIntroMarked) {
+                  callbacks.current.onIntroMarked(markedTime);
+                }
+                container.style.display = 'none';
+              }
+            });
+          }
+        }
+      };
+
+      // Inject the fadeIn animation keyframes into the player's shadow scope
+      const styleTag = document.createElement('style');
+      styleTag.textContent = `
+        @keyframes skipIntroFadeIn {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+      `;
+      art.template.$player.appendChild(styleTag);
+
+      // Store intro value on the art instance so the timeupdate handler can read it
+      // without closure staleness issues
+      art._introTimeValue = introTime;
+      art._artMovieSlug = artMovieSlug;
+      art._lastButtonType = null as string | null;
+      art._introMarked = false;
+
+      // ─── TIME UPDATE HANDLER: Show/Hide Skip or Mark button ─────────
+      art.on('video:timeupdate', () => {
+        if (!isMounted.current || !artRef.current) return;
+        const currentTime = art.currentTime;
+        const currentIntro = art._introTimeValue;
+        const container = getContainer();
+        if (!container) return;
+
+        if (currentIntro !== null && currentIntro !== undefined) {
+          // ── Case A: Intro data exists ──
+          if (currentTime < currentIntro) {
+            if (art._lastButtonType !== 'skip') {
+              renderButton('skip');
+              art._lastButtonType = 'skip';
             }
-          });
-        }
-      }
-    };
-
-    // Inject the fadeIn animation keyframes into the player's shadow scope
-    const styleTag = document.createElement('style');
-    styleTag.textContent = `
-      @keyframes skipIntroFadeIn {
-        from { opacity: 0; transform: translateY(10px); }
-        to { opacity: 1; transform: translateY(0); }
-      }
-    `;
-    art.template.$player.appendChild(styleTag);
-
-    // Store intro value on the art instance so the timeupdate handler can read it
-    // without closure staleness issues
-    art._introTimeValue = introTime;
-    art._artMovieSlug = artMovieSlug;
-    art._lastButtonType = null as string | null;
-    art._introMarked = false;
-
-    // ─── TIME UPDATE HANDLER: Show/Hide Skip or Mark button ─────────
-    art.on('video:timeupdate', () => {
-      if (!isMounted.current || !artRef.current) return;
-      const currentTime = art.currentTime;
-      const currentIntro = art._introTimeValue;
-      const container = getContainer();
-      if (!container) return;
-
-      if (currentIntro !== null && currentIntro !== undefined) {
-        // ── Case A: Intro data exists ──
-        if (currentTime < currentIntro) {
-          if (art._lastButtonType !== 'skip') {
-            renderButton('skip');
-            art._lastButtonType = 'skip';
+          } else {
+            if (art._lastButtonType !== null) {
+              container.style.display = 'none';
+              art._lastButtonType = null;
+            }
           }
         } else {
-          if (art._lastButtonType !== null) {
-            container.style.display = 'none';
-            art._lastButtonType = null;
+          // ── Case B: No intro data — show Mark button in first 3 min ──
+          if (!art._introMarked && currentTime < 180) {
+            if (art._lastButtonType !== 'mark') {
+              renderButton('mark');
+              art._lastButtonType = 'mark';
+            }
+          } else {
+            if (art._lastButtonType !== null) {
+              container.style.display = 'none';
+              art._lastButtonType = null;
+            }
           }
         }
-      } else {
-        // ── Case B: No intro data — show Mark button in first 3 min ──
-        if (!art._introMarked && currentTime < 180) {
-          if (art._lastButtonType !== 'mark') {
-            renderButton('mark');
-            art._lastButtonType = 'mark';
-          }
-        } else {
-          if (art._lastButtonType !== null) {
-            container.style.display = 'none';
-            art._lastButtonType = null;
-          }
-        }
-      }
-    });
+      });
+    }
 
 
     art.on('ready', () => {
@@ -841,6 +843,7 @@ export const WatchMovie = () => {
               // Host autoplays; guests start paused and wait for the initial sync command
               autoplay={isHost}
               // ── Skip Intro props ──
+              isSeries={movie?.type === 'series'}
               introTime={movie?.type === 'series' ? introTime : null}
               movieSlug={movieSlug}
               onIntroMarked={handleIntroMarked}
