@@ -61,7 +61,7 @@ export const ForgotPassword = () => {
     }
   };
 
-  const onSubmitStep2 = async (data: Step2Data) => {
+  const onSubmitStep2 = async (_data: Step2Data) => {
     setIsLoading(true);
     try {
       // Simulate API call to /api/auth/verify-otp-reset

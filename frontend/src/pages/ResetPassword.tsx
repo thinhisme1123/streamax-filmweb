@@ -37,7 +37,7 @@ export const ResetPassword = () => {
     defaultValues: { password: '', confirmPassword: '' },
   });
 
-  const onSubmit = async (data: ResetFormData) => {
+  const onSubmit = async (_data: ResetFormData) => {
     if (!token) {
       toast.error('Token không hợp lệ hoặc đã hết hạn.');
       return;
