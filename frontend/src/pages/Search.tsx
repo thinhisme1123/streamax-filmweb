@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search as SearchIcon, Filter, X } from 'lucide-react';
+import { Search as SearchIcon, Filter, X, ChevronDown } from 'lucide-react';
 import { MovieGrid, MovieGridSkeleton } from '../components/MovieGrid';
 import { Pagination } from '../components/Pagination';
 import { searchMovies as apiSearch, getCategories, getCountries } from '../services/api';
@@ -186,70 +186,85 @@ export const Search = () => {
                   {/* Category */}
                   <div className="flex flex-col gap-1.5">
                     <label className="text-xs font-medium text-gray-400 uppercase tracking-wider">Thể Loại</label>
-                    <select
-                      value={category}
-                      onChange={(e) => updateFilter('category', e.target.value)}
-                      className="bg-dark border border-white/10 text-white text-sm rounded-lg focus:ring-primary focus:border-primary block w-full p-2.5 outline-none appearance-none"
-                    >
-                      <option value="">Tất cả</option>
-                      {categories.map(c => <option key={c._id} value={c.slug}>{c.name}</option>)}
-                    </select>
+                    <div className="relative">
+                      <select
+                        value={category}
+                        onChange={(e) => updateFilter('category', e.target.value)}
+                        className="bg-dark border border-white/10 text-white text-sm rounded-lg focus:ring-primary focus:border-primary block w-full p-2.5 pr-8 outline-none appearance-none cursor-pointer text-ellipsis overflow-hidden whitespace-nowrap"
+                      >
+                        <option value="">Tất cả</option>
+                        {categories.map(c => <option key={c._id} value={c.slug}>{c.name}</option>)}
+                      </select>
+                      <ChevronDown className="w-4 h-4 text-gray-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                    </div>
                   </div>
 
                   {/* Country */}
                   <div className="flex flex-col gap-1.5">
                     <label className="text-xs font-medium text-gray-400 uppercase tracking-wider">Quốc Gia</label>
-                    <select
-                      value={country}
-                      onChange={(e) => updateFilter('country', e.target.value)}
-                      className="bg-dark border border-white/10 text-white text-sm rounded-lg focus:ring-primary focus:border-primary block w-full p-2.5 outline-none appearance-none"
-                    >
-                      <option value="">Tất cả</option>
-                      {countries.map(c => <option key={c._id} value={c.slug}>{c.name}</option>)}
-                    </select>
+                    <div className="relative">
+                      <select
+                        value={country}
+                        onChange={(e) => updateFilter('country', e.target.value)}
+                        className="bg-dark border border-white/10 text-white text-sm rounded-lg focus:ring-primary focus:border-primary block w-full p-2.5 pr-8 outline-none appearance-none cursor-pointer text-ellipsis overflow-hidden whitespace-nowrap"
+                      >
+                        <option value="">Tất cả</option>
+                        {countries.map(c => <option key={c._id} value={c.slug}>{c.name}</option>)}
+                      </select>
+                      <ChevronDown className="w-4 h-4 text-gray-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                    </div>
                   </div>
 
                   {/* Year */}
                   <div className="flex flex-col gap-1.5">
                     <label className="text-xs font-medium text-gray-400 uppercase tracking-wider">Năm</label>
-                    <select
-                      value={year}
-                      onChange={(e) => updateFilter('year', e.target.value)}
-                      className="bg-dark border border-white/10 text-white text-sm rounded-lg focus:ring-primary focus:border-primary block w-full p-2.5 outline-none appearance-none"
-                    >
-                      <option value="">Tất cả</option>
-                      {YEARS.map(y => <option key={y} value={y}>{y}</option>)}
-                    </select>
+                    <div className="relative">
+                      <select
+                        value={year}
+                        onChange={(e) => updateFilter('year', e.target.value)}
+                        className="bg-dark border border-white/10 text-white text-sm rounded-lg focus:ring-primary focus:border-primary block w-full p-2.5 pr-8 outline-none appearance-none cursor-pointer text-ellipsis overflow-hidden whitespace-nowrap"
+                      >
+                        <option value="">Tất cả</option>
+                        {YEARS.map(y => <option key={y} value={y}>{y}</option>)}
+                      </select>
+                      <ChevronDown className="w-4 h-4 text-gray-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                    </div>
                   </div>
 
                   {/* Sort */}
                   <div className="flex flex-col gap-1.5">
                     <label className="text-xs font-medium text-gray-400 uppercase tracking-wider">Sắp Xếp</label>
-                    <select
-                      value={sort}
-                      onChange={(e) => updateFilter('sort', e.target.value)}
-                      className="bg-dark border border-white/10 text-white text-sm rounded-lg focus:ring-primary focus:border-primary block w-full p-2.5 outline-none appearance-none"
-                    >
-                      <option value="">Mặc định</option>
-                      <option value="modified.time-desc">Mới cập nhật</option>
-                      <option value="year-desc">Năm sản xuất (Mới nhất)</option>
-                      <option value="year-asc">Năm sản xuất (Cũ nhất)</option>
-                    </select>
+                    <div className="relative">
+                      <select
+                        value={sort}
+                        onChange={(e) => updateFilter('sort', e.target.value)}
+                        className="bg-dark border border-white/10 text-white text-sm rounded-lg focus:ring-primary focus:border-primary block w-full p-2.5 pr-8 outline-none appearance-none cursor-pointer text-ellipsis overflow-hidden whitespace-nowrap"
+                      >
+                        <option value="">Mặc định</option>
+                        <option value="modified.time-desc">Mới cập nhật</option>
+                        <option value="year-desc">Năm sản xuất (Mới nhất)</option>
+                        <option value="year-asc">Năm sản xuất (Cũ nhất)</option>
+                      </select>
+                      <ChevronDown className="w-4 h-4 text-gray-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                    </div>
                   </div>
 
                   {/* Language */}
                   <div className="flex flex-col gap-1.5">
                     <label className="text-xs font-medium text-gray-400 uppercase tracking-wider">Ngôn Ngữ</label>
-                    <select
-                      value={sortLang}
-                      onChange={(e) => updateFilter('sort_lang', e.target.value)}
-                      className="bg-dark border border-white/10 text-white text-sm rounded-lg focus:ring-primary focus:border-primary block w-full p-2.5 outline-none appearance-none"
-                    >
-                      <option value="">Tất cả</option>
-                      <option value="vietsub">Vietsub</option>
-                      <option value="thuyet-minh">Thuyết Minh</option>
-                      <option value="long-tieng">Lồng Tiếng</option>
-                    </select>
+                    <div className="relative">
+                      <select
+                        value={sortLang}
+                        onChange={(e) => updateFilter('sort_lang', e.target.value)}
+                        className="bg-dark border border-white/10 text-white text-sm rounded-lg focus:ring-primary focus:border-primary block w-full p-2.5 pr-8 outline-none appearance-none cursor-pointer text-ellipsis overflow-hidden whitespace-nowrap"
+                      >
+                        <option value="">Tất cả</option>
+                        <option value="vietsub">Vietsub</option>
+                        <option value="thuyet-minh">Thuyết Minh</option>
+                        <option value="long-tieng">Lồng Tiếng</option>
+                      </select>
+                      <ChevronDown className="w-4 h-4 text-gray-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                    </div>
                   </div>
 
                 </div>

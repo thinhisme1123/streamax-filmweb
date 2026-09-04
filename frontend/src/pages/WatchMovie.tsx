@@ -120,8 +120,27 @@ const ArtPlayerWrapper = ({ url, playing, autoplay = true, onReady, onPlay, onPa
       fullscreen: true,
       setting: true,
       playbackRate: true,
+      fastForward: true, // Enables double-click left/right to seek 10s
       // CRITICAL: Suppress any poster/thumbnail that could trigger JPEG loads
       poster: '',
+      controls: [
+        {
+          position: 'right',
+          html: '<div style="display:flex;align-items:center;justify-content:center;padding:0 5px;cursor:pointer;"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><text x="12" y="16" font-size="8" font-family="sans-serif" font-weight="bold" fill="currentColor" stroke="none" text-anchor="middle">10</text></svg></div>',
+          tooltip: 'Lùi 10 giây',
+          click: function () {
+            if (artRef.current) artRef.current.currentTime -= 10;
+          },
+        },
+        {
+          position: 'right',
+          html: '<div style="display:flex;align-items:center;justify-content:center;padding:0 5px;cursor:pointer;"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><text x="12" y="16" font-size="8" font-family="sans-serif" font-weight="bold" fill="currentColor" stroke="none" text-anchor="middle">10</text></svg></div>',
+          tooltip: 'Tiến 10 giây',
+          click: function () {
+            if (artRef.current) artRef.current.currentTime += 10;
+          },
+        },
+      ],
       customType: {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         m3u8: function playM3u8(video: any, src: string, player: any) {
@@ -553,7 +572,7 @@ export const WatchMovie = () => {
         
         addToHistory(movie, currentEpisode.name, currentEpisode.slug, time, duration);
       }
-    }, 15000);
+    }, 5000);
 
     return () => clearInterval(interval);
   }, [playing, user, movie, currentEpisode, addToHistory]);
@@ -775,7 +794,7 @@ export const WatchMovie = () => {
   }
 
   return (
-    <div className="flex flex-col lg:flex-row min-h-screen bg-dark pt-16">
+    <div className="flex flex-col lg:flex-row min-h-screen bg-dark">
       {/* Left Column - Video Player Area */}
       <div className={`flex-1 flex flex-col relative bg-black transition-all duration-300 ${isTheaterMode ? 'w-full' : 'lg:w-3/4 xl:w-4/5'}`}>
         <div className="absolute top-0 left-0 right-0 z-50 p-4 bg-gradient-to-b from-black/80 to-transparent flex items-center justify-between pointer-events-auto transition-opacity duration-300">
@@ -801,7 +820,11 @@ export const WatchMovie = () => {
 
                 // 3. Navigate immediately — no setTimeout needed because all
                 //    network activity and media playback is already dead
-                navigate(`/phim/${movieSlug}`);
+                if (window.history.length > 2) {
+                  navigate(-1);
+                } else {
+                  navigate(`/phim/${movieSlug}`);
+                }
               }}
               className="p-2 bg-white/10 hover:bg-white/20 rounded-full transition-colors text-white backdrop-blur-sm"
               title="Quay lại chi tiết phim"
