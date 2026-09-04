@@ -82,11 +82,16 @@ export const MovieCard = ({ movie, className }: MovieCardProps) => {
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       animate={{
-        scale: shouldLoadTrailer ? 1.1 : 1,
-        zIndex: shouldLoadTrailer ? 50 : 1,
-        y: shouldLoadTrailer ? -10 : 0
+        scale: isHovered ? 1.15 : 1,
+        zIndex: isHovered ? 50 : 1,
+        y: isHovered ? -15 : 0,
+        boxShadow: isHovered ? "0 25px 50px -12px rgba(0, 0, 0, 0.75)" : "0 0px 0px rgba(0,0,0,0)",
       }}
-      transition={{ duration: 0.4, ease: "easeOut" }}
+      transition={{ 
+        duration: 0.3, 
+        ease: [0.25, 0.1, 0.25, 1],
+        delay: isHovered ? 0.3 : 0
+      }}
     >
       {/* Poster Image (Base Layer) - Remains visible until video is ready */}
       <img
@@ -112,7 +117,7 @@ export const MovieCard = ({ movie, className }: MovieCardProps) => {
       )}
 
       {/* Top Right Action - Favorite */}
-      <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity z-20">
+      <div className={`absolute top-2 right-2 z-20 transition-all ${isHovered ? 'opacity-100 duration-300 delay-300' : 'opacity-0 duration-200'}`}>
         <FavoriteButton
           movie={movie}
           className="p-1.5 bg-black/50 rounded-full hover:bg-black/80 backdrop-blur-sm"
@@ -121,32 +126,38 @@ export const MovieCard = ({ movie, className }: MovieCardProps) => {
       </div>
 
       {/* Hover Overlay */}
-      <div className={`absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent p-4 flex flex-col justify-end z-10 pointer-events-auto transition-opacity duration-300 ${isHovered ? 'opacity-100' : 'opacity-0'}`}>
-        <h4 className="font-bold text-white mb-2 line-clamp-1 drop-shadow-md">{movie.title}</h4>
+      <div 
+        className={`absolute inset-0 bg-gradient-to-t from-[#141414] via-[#141414]/80 to-transparent p-4 flex flex-col justify-end z-10 pointer-events-auto transition-all ${
+          isHovered 
+            ? 'opacity-100 duration-300 delay-300 translate-y-0' 
+            : 'opacity-0 duration-200 translate-y-4'
+        }`}
+      >
+        <h4 className="font-bold text-white mb-3 line-clamp-1 drop-shadow-lg text-lg">{movie.title}</h4>
 
-        <div className="flex items-center gap-2 mb-2">
+        <div className="flex items-center gap-2 mb-3">
           <button
             onClick={(e) => { e.stopPropagation(); navigate(`/phim/${movie.slug || movie.id}`); }}
-            className="w-8 h-8 bg-white rounded-full flex items-center justify-center hover:bg-gray-300 transition shadow-lg"
+            className="w-8 h-8 bg-white rounded-full flex items-center justify-center hover:bg-gray-200 hover:scale-110 transition-all shadow-lg"
           >
-            <Play className="w-4 h-4 fill-black text-black ml-1" />
+            <Play className="w-4 h-4 fill-black text-black ml-0.5" />
           </button>
 
           <div className="flex-grow"></div>
           <button
             onClick={(e) => { e.stopPropagation(); navigate(`/phim/${movie.slug || movie.id}`); }}
-            className="w-8 h-8 border-2 border-gray-300 rounded-full flex items-center justify-center hover:border-white hover:bg-white/20 transition shadow-lg bg-black/30 backdrop-blur-sm"
+            className="w-8 h-8 border border-gray-400 rounded-full flex items-center justify-center hover:border-white hover:bg-white/20 hover:scale-110 transition-all shadow-lg bg-black/50 backdrop-blur-sm"
           >
             <ChevronDown className="w-4 h-4 text-white" />
           </button>
         </div>
 
-        <div className="flex items-center gap-2 text-xs font-semibold text-gray-200 mb-1 drop-shadow-md">
-          <span className="text-green-400">{movie.matchScore}% Match</span>
-          <span className="border border-gray-400 px-1 bg-black/30">{movie.maturityRating}</span>
+        <div className="flex items-center gap-2 text-xs font-semibold text-gray-200 mb-1.5 drop-shadow-md">
+          <span className="text-green-500 font-bold">{movie.matchScore}% Match</span>
+          <span className="border border-gray-500 px-1.5 py-0.5 rounded-sm bg-black/50 text-[10px]">{movie.maturityRating}</span>
           <span>{movie.duration}</span>
         </div>
-        <div className="text-xs text-gray-300 drop-shadow-md line-clamp-1">
+        <div className="text-[11px] text-gray-300 drop-shadow-md line-clamp-1 font-medium">
           {movie.genre}
         </div>
       </div>

@@ -173,30 +173,23 @@ export const MovieListPage = () => {
 
   return (
     <div className="pt-24 pb-20 min-h-screen">
-      {/* Hero bar */}
-      <div className="relative h-36 md:h-48 overflow-hidden mb-8">
-        <div className="absolute inset-0 bg-gradient-to-r from-primary/20 via-dark to-dark" />
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent to-dark" />
-        <div className="relative h-full max-w-7xl mx-auto px-4 md:px-12 flex items-end pb-6">
-          <div>
-            <motion.h1
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              className="text-2xl md:text-4xl font-bold text-white flex items-center gap-3 capitalize"
-            >
-              {getIcon()}
-              {getTitle()}
-              {!isList && !isYear && currentParam && (
-                <span className="text-gray-300 capitalize"> - {currentParam.replace(/-/g, ' ')}</span>
-              )}
-              {!isLoading && pagination.totalItems > 0 && (
-                <span className="text-lg font-normal text-gray-400">
-                  ({pagination.totalItems.toLocaleString()} phim)
-                </span>
-              )}
-            </motion.h1>
-          </div>
-        </div>
+      <div className="max-w-7xl mx-auto px-4 md:px-12 mb-6">
+        <motion.h1
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          className="text-2xl md:text-3xl font-bold text-white flex items-center gap-3 capitalize"
+        >
+          {getIcon()}
+          {getTitle()}
+          {!isList && !isYear && currentParam && (
+            <span className="text-gray-300 capitalize"> - {currentParam.replace(/-/g, ' ')}</span>
+          )}
+          {!isLoading && pagination.totalItems > 0 && (
+            <span className="text-lg font-normal text-gray-400">
+              ({pagination.totalItems.toLocaleString()} phim)
+            </span>
+          )}
+        </motion.h1>
       </div>
 
       <div className="max-w-7xl mx-auto px-4 md:px-12">

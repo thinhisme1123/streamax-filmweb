@@ -90,13 +90,13 @@ export const searchMovies = async (params: SearchParams): Promise<MovieListResul
 };
 
 export const getCategories = async (): Promise<AppCategory[]> => {
-  const response = await api.get<AppCategory[]>('/the-loai');
-  return response.data;
+  const response = await api.get<any>('/the-loai');
+  return response.data?.data?.items || [];
 };
 
 export const getCountries = async (): Promise<AppCategory[]> => {
-  const response = await api.get<AppCategory[]>('/quoc-gia');
-  return response.data;
+  const response = await api.get<any>('/quoc-gia');
+  return response.data?.data?.items || [];
 };
 
 export const getCategoryMovies = async (slug: string, page = 1, extraParams: Record<string, string> = {}): Promise<MovieListResult> => {

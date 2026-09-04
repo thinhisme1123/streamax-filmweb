@@ -78,7 +78,7 @@ export const MovieRow = ({ title, movies, viewAllLink, isLoading }: MovieRowProp
 
         <div
           ref={rowRef}
-          className="flex gap-3 overflow-x-auto scrollbar-hide scroll-smooth pb-4 px-4 md:px-12"
+          className="flex gap-3 overflow-x-auto scrollbar-hide scroll-smooth pt-8 pb-12 -mt-8 -mb-8 px-4 md:px-12"
         >
           {movies.map(movie => (
             <MovieCard key={movie.id} movie={movie} />

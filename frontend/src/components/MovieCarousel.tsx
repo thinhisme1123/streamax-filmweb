@@ -38,7 +38,7 @@ export const MovieCarousel = ({ title, movies, isLoading }: MovieCarouselProps) 
         
         <div 
           ref={rowRef}
-          className="flex gap-4 overflow-x-auto scrollbar-hide scroll-smooth pb-4"
+          className="flex gap-4 overflow-x-auto scrollbar-hide scroll-smooth pt-8 pb-12 -mt-8 -mb-8"
         >
           {movies.map(movie => (
             <MovieCard key={movie.id} movie={movie} />
